@@ -21,9 +21,9 @@ import java.util.List;
 public class TestController {
 
 
-    @Autowired
-    @Qualifier("testServerImpl")
-    private TestServer testServer;
+//    @Autowired
+//    @Qualifier("testServerImpl")
+//    private TestServer testServer;
 
     // 远程调用 venue 模块的 TestServer 接口
     @DubboReference
@@ -67,23 +67,23 @@ public class TestController {
      * 注意：这里需要通过 RpcContext 设置 HTTP Basic 认证信息，
      *      其中账号为 gatewayuser，密码为 gatewaypass（该密码应与 venue 模块的配置一致）。
      */
-    @GetMapping("/dubboTest")
-    @Operation(summary = "Dubbo 测试调用 venue 模块的 /test/all 接口")
-    public String dubboTest() {
-        // 设置 HTTP Basic 认证信息：账号 gatewayuser，密码 gatewaypass
-        String systemUsername = "gatewayuser";
-        String systemPassword = "gatewaypass";
-        String authString = systemUsername + ":" + systemPassword;
-        String basicAuth = "Basic " + Base64.getEncoder().encodeToString(authString.getBytes(StandardCharsets.UTF_8));
-        // 将认证头添加到 Dubbo 的上下文附件中，供远程服务接收
-        RpcContext.getContext().setAttachment("Authorization", basicAuth);
-
-        // 远程调用 venue 模块的 /test/all 接口
-        Result<List<Test>> result = dubbotestServer.getAllTests();
-
-        // 将结果打印到控制台
-        System.out.println("Dubbo Test Result: " + result);
-
-        return "Dubbo Test Completed. Check console for result.";
-    }
+//    @GetMapping("/dubboTest")
+//    @Operation(summary = "Dubbo 测试调用 venue 模块的 /test/all 接口")
+//    public String dubboTest() {
+//        // 设置 HTTP Basic 认证信息：账号 gatewayuser，密码 gatewaypass
+//        String systemUsername = "gatewayuser";
+//        String systemPassword = "gatewaypass";
+//        String authString = systemUsername + ":" + systemPassword;
+//        String basicAuth = "Basic " + Base64.getEncoder().encodeToString(authString.getBytes(StandardCharsets.UTF_8));
+//        // 将认证头添加到 Dubbo 的上下文附件中，供远程服务接收
+//        RpcContext.getContext().setAttachment("Authorization", basicAuth);
+//
+//        // 远程调用 venue 模块的 /test/all 接口
+//        Result<List<Test>> result = dubbotestServer.getAllTests();
+//
+//        // 将结果打印到控制台
+//        System.out.println("Dubbo Test Result: " + result);
+//
+//        return "Dubbo Test Completed. Check console for result.";
+//    }
 }

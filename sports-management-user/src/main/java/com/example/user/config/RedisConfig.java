@@ -31,7 +31,7 @@ public class RedisConfig {
     @Value("${redis.port}")
     private int port;
 
-    @Value("${redis.password}")
+    @Value("${redis.password}")c
     private String password;
 
     @Value("${redis.database:0}")
