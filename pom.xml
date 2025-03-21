@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>sports-management-system</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>sports-management-api-gateway</module>
+        <module>sports-management-common</module>
+        <module>sports-management-user</module>
+        <module>sports-management-venue</module>
+        <module>sports-management-equipment</module>
+        <module>sports-management-event</module>
+        <module>sports-management-finance</module>
+        <module>sports-management-forum</module>
+        <module>sports-management-notification</module>
+        <module>sports-management-ai</module>
+        <module>sports-management-dependencies</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>17</java.version>
+        <spring-boot.version>2.7.10</spring-boot.version>
+        <spring-cloud.version>2021.0.6</spring-cloud.version>
+        <spring-cloud-alibaba.version>2021.0.5.0</spring-cloud-alibaba.version>
+        <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
+        <lombok.version>1.18.26</lombok.version>
+        <springdoc.version>1.6.15</springdoc.version>
+        <easyexcel.version>3.2.1</easyexcel.version>
+        <slf4j.version>1.7.36</slf4j.version>
+        <logback.version>1.2.11</logback.version>
+        <mysql.version>8.0.30</mysql.version>
+        <redis.version>2.7.10</redis.version>
+        <elasticsearch.version>7.17.9</elasticsearch.version>
+        <mongodb.version>4.9.1</mongodb.version>
+        <minio.version>8.5.2</minio.version>
+        <spring-ai.version>0.7.0</spring-ai.version>
+        <dubbo.version>3.0.10</dubbo.version>
+        <feign.version>11.8</feign.version>
+        <gateway.version>3.1.5</gateway.version>
+        <nacos.version>2021.0.5.0</nacos.version>
+        <sentinel.version>2021.0.5.0</sentinel.version>
+        <jwt.version>0.9.1</jwt.version>
+        <rabbitmq.version>2.7.10</rabbitmq.version>
+        <mail.version>1.6.2</mail.version>
+        <Lettuce.version>2.6.2</Lettuce.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <fastjson2.version>2.0.45</fastjson2.version>
+        <fastjson2-extension-spring6.version>2.0.45</fastjson2-extension-spring6.version>
+        <jackson-datatype-jsr310.version>2.13.5</jackson-datatype-jsr310.version>
+    </properties>
+
+
+</project>

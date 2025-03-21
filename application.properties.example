@@ -1,0 +1,96 @@
+server.port=
+
+spring.application.name=
+
+# 引入 Nacos 配置 (需要手动添加!)
+spring.config.import=nacos:
+
+# Nacos服务发现配置
+spring.cloud.nacos.discovery.server-addr=
+spring.cloud.nacos.discovery.username=
+spring.cloud.nacos.discovery.password=
+
+# Nacos配置中心配置
+spring.cloud.nacos.config.server-addr=
+spring.cloud.nacos.config.file-extension=
+spring.cloud.nacos.config.username=
+spring.cloud.nacos.config.password=
+
+dubbo.application.name=user-service
+dubbo.registry.address=
+
+dubbo.registry.username=
+dubbo.registry.password=
+
+dubbo.registry.parameters.register-consumer-url=
+
+sentinel.transport.dashboard=
+
+spring.redis.host=
+spring.redis.port=
+spring.redis.password=
+spring.redis.database=
+spring.redis.timeout=
+# Redis连接池配置
+spring.redis.lettuce.pool.max-active=
+spring.redis.lettuce.pool.max-wait=
+spring.redis.lettuce.pool.max-idle=
+spring.redis.lettuce.pool.min-idle=
+# 缓存前缀配置
+spring.cache.redis.key-prefix=
+
+
+# MySQL 配置 (添加以下行)
+spring.datasource.url=
+spring.datasource.username=
+spring.datasource.password=
+spring.datasource.driver-class-name=
+
+# =========== HikariCP 核心参数 ===========
+
+# 连接池最大连接数（同时保持的连接上限）
+spring.datasource.hikari.maximum-pool-size=
+
+# 空闲连接的最小数量（可以与max相同，也可更小）
+spring.datasource.hikari.minimum-idle=
+
+# 空闲连接的存活最大时间（毫秒）。超过则会被回收
+spring.datasource.hikari.idle-timeout=
+
+# 获取连接的最大等待时间（毫秒），超时抛异常
+spring.datasource.hikari.connection-timeout=
+
+# 连接的存活时间（毫秒）。超时后连接会被断开重建
+spring.datasource.hikari.max-lifetime=
+
+
+logging.level.org.springframework.security=
+# 配置日志级别为DEBUG
+logging.level.com.baomidou.mybatisplus=
+logging.level.com.baomidou.mybatisplus.extension=
+logging.level.org.mybatis.spring=
+
+
+# application.properties
+snowflake.dataCenterId=
+snowflake.machineId=
+
+spring.cloud.gateway.discovery.locator.enabled=
+
+spring.cloud.gateway.routes[0].id=
+spring.cloud.gateway.routes[0].uri=
+spring.cloud.gateway.routes[0].predicates[0]=
+spring.cloud.gateway.routes[0].filters[0]=
+
+
+# 指定网关自己的 Swagger-UI 访问路径（默认也是 /swagger-ui.html）
+springdoc.swagger-ui.path=
+# Swagger‑UI 聚合配置：聚合各个服务的 OpenAPI 文档
+springdoc.swagger-ui.urls[0].name=
+springdoc.swagger-ui.urls[0].url=
+
+springdoc.swagger-ui.urls[1].name=
+springdoc.swagger-ui.urls[1].url=
+
+springdoc.swagger-ui.urls[2].name=
+springdoc.swagger-ui.urls[2].url=
