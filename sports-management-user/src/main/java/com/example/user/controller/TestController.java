@@ -2,9 +2,11 @@ package com.example.user.controller;
 
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.example.common.model.Result;
+import com.example.common.model.UserRoleWrapper;
 import com.example.user.pojo.Test;
 import com.example.user.service.TestServer;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +23,14 @@ import java.util.List;
 public class TestController {
 
 
-//    @Autowired
-//    @Qualifier("testServerImpl")
-//    private TestServer testServer;
+    @Autowired
+    @Qualifier("testServerImpl")
+    private TestServer testServer;
 
     // 远程调用 venue 模块的 TestServer 接口
-    @DubboReference
-    @Qualifier("dubbotestServer")
-    private TestServer dubbotestServer;
+//    @DubboReference
+//    @Qualifier("dubbotestServer")
+//    private TestServer dubbotestServer;
 
     @PostMapping
     @Operation(summary = "创建测试数据")
@@ -56,7 +58,8 @@ public class TestController {
 
     @GetMapping("/all")
     @Operation(summary = "获取所有测试数据")
-    public Result<List<Test>> getAllTests() {
+    public Result<List<Test>> getAllTests(@Parameter(hidden = true)UserRoleWrapper currentUser) {
+        System.out.println(currentUser);
         return testServer.getAllTests();
     }
 

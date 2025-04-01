@@ -25,35 +25,36 @@ import java.time.Duration;
 @EnableCaching
 public class RedisConfig {
 
-    @Value("${redis.host}")
+    @Value("${spring.redis.host}")
     private String host;
 
-    @Value("${redis.port}")
+    @Value("${spring.redis.port}")
     private int port;
 
-    @Value("${redis.password}")c
+    @Value("${spring.redis.password}")
     private String password;
 
-    @Value("${redis.database:0}")
+    @Value("${spring.redis.database:0}")
     private int database;
 
-    @Value("${redis.timeout:3000}")
+    @Value("${spring.redis.timeout:3000}")
     private int timeout;
 
-    @Value("${redis.lettuce.pool.max-active:8}")
+    @Value("${spring.redis.lettuce.pool.max-active:8}")
     private int maxActive;
 
-    @Value("${redis.lettuce.pool.max-wait:-1}")
+    @Value("${spring.redis.lettuce.pool.max-wait:-1}")
     private long maxWait;
 
-    @Value("${redis.lettuce.pool.max-idle:8}")
+    @Value("${spring.redis.lettuce.pool.max-idle:8}")
     private int maxIdle;
 
-    @Value("${redis.lettuce.pool.min-idle:0}")
+    @Value("${spring.redis.lettuce.pool.min-idle:0}")
     private int minIdle;
 
-    @Value("${redis.key-prefix:sportsys:}")
+    @Value("${spring.cache.redis.key-prefix:sportsys:}")
     private String keyPrefix;
+
 
     /**
      * Redis连接工厂配置
