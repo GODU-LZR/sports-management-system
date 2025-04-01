@@ -1,7 +1,5 @@
 package com.example.common.model;
 
-
-import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,40 +14,20 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRoleWrapper {
-    /**
-     * 用户ID（唯一标识）
-     */
+    // ... (原有字段 userId, username, email, status, roles, issuedAt, expiration) ...
     private Long userId;
-
-    /**
-     * 用户名
-     */
     private String username;
-
-    /**
-     * 邮箱
-     */
     private String email;
-
-    /**
-     * 账号状态：0-正常，1-封禁15天，2-封禁30天，3-永久封禁
-     */
     private Integer status;
-
-    /**
-     * 角色列表
-     */
     private List<RoleInfo> roles;
-
-    /**
-     * JWT 签发时间
-     */
     private LocalDateTime issuedAt;
+    private LocalDateTime expiration;
 
     /**
-     * JWT 过期时间
+     * 客户端指纹 (登录时计算的 User-Agent SHA-256 哈希)
+     * 新增字段
      */
-    private LocalDateTime expiration;
+    private String clientFingerprint;
 
     /**
      * 角色信息内部类
@@ -58,19 +36,8 @@ public class UserRoleWrapper {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RoleInfo {
-        /**
-         * 角色ID（唯一标识）
-         */
         private Long roleId;
-
-        /**
-         * 角色名称
-         */
         private String roleName;
-
-        /**
-         * 角色编码（唯一）
-         */
         private String roleCode;
     }
 }

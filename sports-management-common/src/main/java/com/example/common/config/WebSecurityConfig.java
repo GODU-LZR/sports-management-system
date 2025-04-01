@@ -42,7 +42,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // 固定系统账号：网关传递给下游的账号
     private static final String SYSTEM_USERNAME = "gatewayuser";
     // 这里的密码是 "gatewaypass" 使用 BCryptPasswordEncoder 加密后的值
-    private static final String SYSTEM_PASSWORD = "$2a$10$IfiH30TJcPEqin4WMT3HGORvaGvahNllWD3/R.UmMN6LV14PF/a6S";
+    private static final String SYSTEM_PASSWORD = "$2a$10$F9kJs5I85nRpeOiw5edUteRm3btlDzA5Db7LnpmrWhCz0C1UK9QPC";
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
