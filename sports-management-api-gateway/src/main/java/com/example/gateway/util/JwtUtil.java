@@ -1,104 +1,126 @@
-package com.example.gateway.util;
+package com.example.gateway.util; // 网关的包名
 
-import com.example.common.model.UserRoleWrapper;
+import com.example.common.model.UserRoleWrapper; // 依赖 common 模块
 import com.example.common.model.UserRoleWrapper.RoleInfo;
-import com.example.gateway.util.RedisUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils; // 引入 StringUtils
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
 
-    @Autowired
-    private RedisUtil redisUtil;
+    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
 
-    @Value("${jwt.secret:4926644aA}")
+    @Value("${jwt.secret:4926644aA}") // 确保与 user-service 一致
     private String secret;
 
-    @Value("${jwt.expiration:3600}")
-    private long expiration;
+    // --- Claim Keys (与 user-service 保持一致) ---
+    public static final String CLAIM_USER_ID = "userId";
+    public static final String CLAIM_USERNAME = "username";
+    public static final String CLAIM_EMAIL = "email";
+    public static final String CLAIM_STATUS = "status";
+    public static final String CLAIM_ROLES = "roles";
+    public static final String CLAIM_FINGERPRINT = "clientFingerprint";
 
-    // 生成 JWT
-    public String generateToken(UserRoleWrapper userRoleWrapper) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userRoleWrapper.getUserId());
-        claims.put("username", userRoleWrapper.getUsername());
-        claims.put("email", userRoleWrapper.getEmail());
-        claims.put("status", userRoleWrapper.getStatus());
-
-        // 将角色列表转换为逗号分隔的字符串（这里使用角色编码，可根据需要调整为角色名称）
-        String rolesStr = userRoleWrapper.getRoles().stream()
-                .map(RoleInfo::getRoleCode)
-                .collect(Collectors.joining(","));
-        claims.put("roles", rolesStr);
-
-        // 格式化 LocalDateTime 为字符串（ISO_LOCAL_DATE_TIME 格式）
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        claims.put("issuedAt", userRoleWrapper.getIssuedAt().format(formatter));
-        claims.put("expiration", userRoleWrapper.getExpiration().format(formatter));
-
-        String token = Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000))
-                .signWith(SignatureAlgorithm.HS512, secret)
-                .compact();
-
-        // 将 token 存入 Redis
-        redisUtil.set("JWT:" + userRoleWrapper.getUserId(), token, expiration, TimeUnit.SECONDS);
-
-        return token;
-    }
-
-    // 解析 JWT
+    /**
+     * 解析 JWT, 获取 Claims
+     * (与 user-service 的 parseToken 方法相同)
+     */
     public Claims parseToken(String token) {
         try {
-            return Jwts.parser()
+            Claims claims = Jwts.parser()
                     .setSigningKey(secret)
                     .parseClaimsJws(token)
                     .getBody();
+            log.debug("网关 JWT 解析成功");
+            return claims;
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            log.warn("网关检测到 JWT 已过期: {}", token); // 只记录警告，具体处理由 Filter 决定
+            // 返回过期的 Claims，让 Filter 判断
+            return e.getClaims();
+        } catch (Exception e) { // 捕获其他解析错误
+            log.error("网关 JWT 解析失败: {}", token, e);
+            return null; // 解析彻底失败返回 null
+        }
+    }
+
+    /**
+     * 检查 JWT 是否过期 (基于 Claims 中的 exp 字段)
+     * (与 user-service 的 isTokenExpired 方法相同)
+     */
+    public boolean isTokenExpired(Claims claims) {
+        if (claims == null || claims.getExpiration() == null) {
+            return true;
+        }
+        return claims.getExpiration().before(new Date());
+    }
+
+    /**
+     * 从 Claims 中安全地获取指定 Key 的值
+     * (与 user-service 的 getClaimFromToken 方法相同)
+     */
+    public <T> T getClaimFromToken(Claims claims, String key, Class<T> requiredType) {
+        if (claims == null || key == null || requiredType == null) {
+            return null;
+        }
+        try {
+            return claims.get(key, requiredType);
         } catch (Exception e) {
+            log.warn("网关从 Claims 获取 Key '{}' 的值时出错或类型不匹配: {}", key, e.getMessage());
             return null;
         }
     }
 
-    // 检查 JWT 是否过期
-    public boolean isTokenExpired(Claims claims) {
-        return claims.getExpiration().before(new Date());
-    }
-
-    // 从 Claims 中提取 UserRoleWrapper 信息
+    /**
+     * 从 Claims 中提取 UserRoleWrapper 信息 (供下游服务使用)
+     * 注意：这里的 RoleInfo 只包含 roleCode
+     */
     public UserRoleWrapper extractUserRoleWrapper(Claims claims) {
-        UserRoleWrapper userRoleWrapper = new UserRoleWrapper();
-        userRoleWrapper.setUserId(claims.get("userId", Long.class));
-        userRoleWrapper.setUsername(claims.get("username", String.class));
-        userRoleWrapper.setEmail(claims.get("email", String.class));
-        userRoleWrapper.setStatus(claims.get("status", Integer.class));
+        if (claims == null) {
+            log.warn("网关尝试从 null Claims 中提取 UserRoleWrapper");
+            return null;
+        }
+        try {
+            UserRoleWrapper userRoleWrapper = new UserRoleWrapper();
+            userRoleWrapper.setUserId(getClaimFromToken(claims, CLAIM_USER_ID, Long.class));
+            userRoleWrapper.setUsername(getClaimFromToken(claims, CLAIM_USERNAME, String.class));
+            userRoleWrapper.setEmail(getClaimFromToken(claims, CLAIM_EMAIL, String.class));
+            userRoleWrapper.setStatus(getClaimFromToken(claims, CLAIM_STATUS, Integer.class));
+            // 指纹不需要传递给下游服务，所以这里不提取到 Wrapper 中
 
-        // 将角色字符串拆分并转换为 List<RoleInfo>
-        String rolesStr = claims.get("roles", String.class);
-        List<RoleInfo> rolesList = Arrays.stream(rolesStr.split(","))
-                .map(role -> new RoleInfo(null, role, role))
-                .collect(Collectors.toList());
-        userRoleWrapper.setRoles(rolesList);
+            String rolesStr = getClaimFromToken(claims, CLAIM_ROLES, String.class);
+            if (StringUtils.hasText(rolesStr)) {
+                List<RoleInfo> rolesList = Arrays.stream(rolesStr.split(","))
+                        .map(roleCode -> new RoleInfo(null, null, roleCode))
+                        .collect(Collectors.toList());
+                userRoleWrapper.setRoles(rolesList);
+            } else {
+                userRoleWrapper.setRoles(List.of());
+            }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        userRoleWrapper.setIssuedAt(LocalDateTime.parse(claims.get("issuedAt", String.class), formatter));
-        userRoleWrapper.setExpiration(LocalDateTime.parse(claims.get("expiration", String.class), formatter));
-        return userRoleWrapper;
+            // 时间信息通常也不需要传递给下游，下游服务应有自己的时间处理逻辑
+            // Date issuedAtDate = claims.getIssuedAt();
+            // Date expirationDate = claims.getExpiration();
+            // if (issuedAtDate != null) userRoleWrapper.setIssuedAt(issuedAtDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+            // if (expirationDate != null) userRoleWrapper.setExpiration(expirationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+
+            log.debug("网关从 Claims 成功提取 UserRoleWrapper (用于下游): userId={}", userRoleWrapper.getUserId());
+            return userRoleWrapper;
+
+        } catch (Exception e) {
+            log.error("网关从 Claims 提取 UserRoleWrapper 时出错: {}", claims, e);
+            return null;
+        }
     }
 }
