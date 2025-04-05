@@ -1,7 +1,7 @@
 package com.example.gateway.util; // 网关的包名
 
-import com.example.common.model.UserRoleWrapper; // 依赖 common 模块
-import com.example.common.model.UserRoleWrapper.RoleInfo;
+import com.example.common.dto.UserRoleWrapper; // 依赖 common 模块
+import com.example.common.dto.UserRoleWrapper.RoleInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.slf4j.Logger;
@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils; // 引入 StringUtils
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +25,7 @@ public class JwtUtil {
 
     // --- Claim Keys (与 user-service 保持一致) ---
     public static final String CLAIM_USER_ID = "userId";
+    public static final String CLAIM_USER_CODE = "userCode";
     public static final String CLAIM_USERNAME = "username";
     public static final String CLAIM_EMAIL = "email";
     public static final String CLAIM_STATUS = "status";
@@ -94,10 +93,11 @@ public class JwtUtil {
         try {
             UserRoleWrapper userRoleWrapper = new UserRoleWrapper();
             userRoleWrapper.setUserId(getClaimFromToken(claims, CLAIM_USER_ID, Long.class));
+            userRoleWrapper.setUserCode(claims.get(CLAIM_USER_CODE, String.class));
             userRoleWrapper.setUsername(getClaimFromToken(claims, CLAIM_USERNAME, String.class));
             userRoleWrapper.setEmail(getClaimFromToken(claims, CLAIM_EMAIL, String.class));
             userRoleWrapper.setStatus(getClaimFromToken(claims, CLAIM_STATUS, Integer.class));
-            // 指纹不需要传递给下游服务，所以这里不提取到 Wrapper 中
+
 
             String rolesStr = getClaimFromToken(claims, CLAIM_ROLES, String.class);
             if (StringUtils.hasText(rolesStr)) {
@@ -108,12 +108,6 @@ public class JwtUtil {
             } else {
                 userRoleWrapper.setRoles(List.of());
             }
-
-            // 时间信息通常也不需要传递给下游，下游服务应有自己的时间处理逻辑
-            // Date issuedAtDate = claims.getIssuedAt();
-            // Date expirationDate = claims.getExpiration();
-            // if (issuedAtDate != null) userRoleWrapper.setIssuedAt(issuedAtDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-            // if (expirationDate != null) userRoleWrapper.setExpiration(expirationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
 
             log.debug("网关从 Claims 成功提取 UserRoleWrapper (用于下游): userId={}", userRoleWrapper.getUserId());
             return userRoleWrapper;

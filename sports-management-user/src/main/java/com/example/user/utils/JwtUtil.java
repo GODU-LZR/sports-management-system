@@ -1,7 +1,7 @@
 package com.example.user.utils; // 注意包名可能不同
 
-import com.example.common.model.UserRoleWrapper;
-import com.example.common.model.UserRoleWrapper.RoleInfo;
+import com.example.common.dto.UserRoleWrapper;
+import com.example.common.dto.UserRoleWrapper.RoleInfo;
 // import com.example.gateway.util.RedisUtil; // user-service 不应该依赖 gateway 的 util
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -11,9 +11,7 @@ import org.springframework.stereotype.Component;
 import org.slf4j.Logger; // 使用 SLF4J
 import org.slf4j.LoggerFactory; // 使用 SLF4J
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,9 +24,6 @@ public class JwtUtil {
 
     private static final Logger log = LoggerFactory.getLogger(JwtUtil.class); // 日志记录器
 
-    // 不再需要 RedisUtil 依赖，JWT 的存储由 AuthService 处理
-    // @Autowired
-    // private RedisUtil redisUtil;
 
     @Value("${jwt.secret:4926644aA}") // 建议从配置中心或环境变量读取更安全的密钥
     private String secret;
@@ -38,14 +33,13 @@ public class JwtUtil {
 
     // --- 新增常量 ---
     public static final String CLAIM_USER_ID = "userId";
+    public static final String CLAIM_USER_CODE = "userCode";
     public static final String CLAIM_USERNAME = "username";
     public static final String CLAIM_EMAIL = "email";
     public static final String CLAIM_STATUS = "status";
     public static final String CLAIM_ROLES = "roles";
     public static final String CLAIM_FINGERPRINT = "clientFingerprint"; // 指纹的 Claim Key
-    // 不再需要存储时间字符串，使用标准的 iat 和 exp
-    // public static final String CLAIM_ISSUED_AT = "issuedAt";
-    // public static final String CLAIM_EXPIRATION = "expiration";
+
 
 
     /**
@@ -58,6 +52,7 @@ public class JwtUtil {
         log.info("开始生成用户 {} 的 JWT, 客户端指纹: {}", userRoleWrapper.getUserId(), userRoleWrapper.getClientFingerprint());
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_USER_ID, userRoleWrapper.getUserId());
+        claims.put(CLAIM_USER_CODE,userRoleWrapper.getUserCode());
         claims.put(CLAIM_USERNAME, userRoleWrapper.getUsername());
         claims.put(CLAIM_EMAIL, userRoleWrapper.getEmail());
         claims.put(CLAIM_STATUS, userRoleWrapper.getStatus());
@@ -83,8 +78,6 @@ public class JwtUtil {
                 .compact();
 
         log.info("用户 {} 的 JWT 生成成功", userRoleWrapper.getUserId());
-        // 不在此处存入 Redis，由调用方 (AuthService) 处理
-        // redisUtil.set("JWT:" + userRoleWrapper.getUserId(), token, expiration, TimeUnit.SECONDS);
 
         return token;
     }
@@ -156,6 +149,7 @@ public class JwtUtil {
             UserRoleWrapper userRoleWrapper = new UserRoleWrapper();
             // 使用常量 Key 获取 Claim，并指定类型
             userRoleWrapper.setUserId(claims.get(CLAIM_USER_ID, Long.class));
+            userRoleWrapper.setUserCode(claims.get(CLAIM_USER_CODE, String.class));
             userRoleWrapper.setUsername(claims.get(CLAIM_USERNAME, String.class));
             userRoleWrapper.setEmail(claims.get(CLAIM_EMAIL, String.class));
             userRoleWrapper.setStatus(claims.get(CLAIM_STATUS, Integer.class));

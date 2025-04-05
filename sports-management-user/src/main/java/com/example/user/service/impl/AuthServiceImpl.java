@@ -1,8 +1,8 @@
 package com.example.user.service.impl;
 
-import com.example.common.model.Result;
-import com.example.common.model.ResultCode;
-import com.example.common.model.UserRoleWrapper;
+import com.example.common.response.Result;
+import com.example.common.response.ResultCode;
+import com.example.common.dto.UserRoleWrapper;
 import com.example.common.utils.SnowflakeIdGenerator;
 import com.example.user.dto.LoginRequest;
 import com.example.user.dto.LoginResponse;
@@ -16,7 +16,7 @@ import com.example.user.pojo.User;
 import com.example.user.service.AuthService;
 import com.example.user.service.UserService;
 import com.example.user.utils.JwtUtil; // 确认是 user-service 的 JwtUtil
-import com.example.user.utils.RedisUtil; // 确认是 user-service 的 RedisUtil
+import com.example.common.utils.RedisUtil; // 确认是 user-service 的 RedisUtil
 import io.jsonwebtoken.Claims;
 import org.slf4j.Logger; // 使用 SLF4J
 import org.slf4j.LoggerFactory; // 使用 SLF4J
@@ -226,6 +226,7 @@ public class AuthServiceImpl implements AuthService {
         // 6. 构造 UserRoleWrapper 对象
         UserRoleWrapper userRoleWrapper = new UserRoleWrapper();
         userRoleWrapper.setUserId(user.getId());
+        userRoleWrapper.setUserCode(user.getUserCode());
         userRoleWrapper.setUsername(user.getUsername());
         userRoleWrapper.setEmail(user.getEmail());
         userRoleWrapper.setStatus(user.getStatus());
@@ -246,9 +247,6 @@ public class AuthServiceImpl implements AuthService {
             userRoleWrapper.setRoles(List.of()); // 确保 roles 不为 null
         }
 
-        // 设置 JWT 签发和过期时间 (使用 JwtUtil 内部逻辑，这里不再设置)
-        // userRoleWrapper.setIssuedAt(LocalDateTime.now());
-        // userRoleWrapper.setExpiration(userRoleWrapper.getIssuedAt().plusSeconds(jwtExpirationSeconds));
 
         // 7. 生成 JWT (包含指纹)
         String token = jwtUtil.generateToken(userRoleWrapper);

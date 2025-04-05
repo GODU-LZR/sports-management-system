@@ -1,10 +1,10 @@
 package com.example.finance.service.impl;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
+import com.example.common.utils.RedisUtil;
 import com.example.finance.mapper.TestMapper;
 import com.example.finance.pojo.Test;
 import com.example.finance.service.TestServer;
-import com.example.finance.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

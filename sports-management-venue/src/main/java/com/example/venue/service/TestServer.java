@@ -1,6 +1,6 @@
 package com.example.venue.service;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 
 import com.example.venue.pojo.Test;
 import io.swagger.v3.oas.annotations.Operation;

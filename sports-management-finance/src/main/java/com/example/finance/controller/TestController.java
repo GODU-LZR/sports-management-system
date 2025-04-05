@@ -1,6 +1,6 @@
 package com.example.finance.controller;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 import com.example.finance.pojo.Test;
 import com.example.finance.service.TestServer;
 import io.swagger.v3.oas.annotations.Operation;

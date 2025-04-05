@@ -1,11 +1,11 @@
 package com.example.user.service.impl;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 import com.example.common.utils.SnowflakeIdGenerator;
 import com.example.user.mapper.SysUserRoleMapper;
 import com.example.user.pojo.SysUserRole;
 import com.example.user.service.SysUserRoleService;
-import com.example.user.utils.RedisUtil;
+import com.example.common.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -2,7 +2,7 @@ package com.example.ai.controller;
 
 import com.example.ai.pojo.Test;
 import com.example.ai.service.TestServer;
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

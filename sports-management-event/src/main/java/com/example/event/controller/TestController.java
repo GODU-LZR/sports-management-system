@@ -1,6 +1,6 @@
 package com.example.event.controller;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 import com.example.event.pojo.Test;
 import com.example.event.service.TestServer;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,6 +1,6 @@
 package com.example.user.service;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 import com.example.user.pojo.User;
 
 import java.util.List;

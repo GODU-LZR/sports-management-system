@@ -2,8 +2,8 @@ package com.example.gateway.config;
 
 import com.alibaba.csp.sentinel.adapter.gateway.sc.callback.BlockRequestHandler;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.callback.GatewayCallbackManager;
-import com.example.common.model.Result;
-import com.example.common.model.ResultCode;
+import com.example.common.response.Result;
+import com.example.common.response.ResultCode;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

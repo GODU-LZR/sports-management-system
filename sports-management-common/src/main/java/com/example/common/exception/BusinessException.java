@@ -1,6 +1,6 @@
 package com.example.common.exception;
 
-import com.example.common.model.ResultCode;
+import com.example.common.response.ResultCode;
 import lombok.Getter;
 
 

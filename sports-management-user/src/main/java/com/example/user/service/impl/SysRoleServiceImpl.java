@@ -1,18 +1,16 @@
 package com.example.user.service.impl;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 import com.example.common.utils.SnowflakeIdGenerator;
 import com.example.user.mapper.SysRoleMapper;
 import com.example.user.pojo.SysRole;
 import com.example.user.service.SysRoleService;
-import com.example.user.utils.RedisUtil;
+import com.example.common.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class SysRoleServiceImpl implements SysRoleService {

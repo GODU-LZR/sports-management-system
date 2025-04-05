@@ -1,7 +1,7 @@
 package com.example.common.exception;
 
-import com.example.common.model.Result;
-import com.example.common.model.ResultCode;
+import com.example.common.response.Result;
+import com.example.common.response.ResultCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
