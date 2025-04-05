@@ -12,7 +12,7 @@ import java.util.List;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired
-    private UserRoleWrapperArgumentResolver userRoleWrapperArgumentResolver; // 注入我们自定义的解析器
+    private UserConstantArgumentResolver userConstantArgumentResolver; // 注入我们自定义的解析器
 
     /**
      * 添加自定义的参数解析器到 Spring MVC 处理流程中
@@ -21,7 +21,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         // 将我们的 UserRoleWrapperArgumentResolver 添加到解析器列表中
-        resolvers.add(userRoleWrapperArgumentResolver);
+        resolvers.add(userConstantArgumentResolver);
         // 这里可以添加其他的自定义 ArgumentResolver
     }
 

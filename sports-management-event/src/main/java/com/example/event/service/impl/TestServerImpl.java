@@ -1,10 +1,10 @@
 package com.example.event.service.impl;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
+import com.example.common.utils.RedisUtil;
 import com.example.event.mapper.TestMapper;
 import com.example.event.pojo.Test;
 import com.example.event.service.TestServer;
-import com.example.event.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

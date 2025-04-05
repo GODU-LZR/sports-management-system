@@ -1,10 +1,10 @@
 package com.example.gateway.filter;
 
-import com.example.common.model.Result; // 导入 common 的 Result
-import com.example.common.model.ResultCode; // 导入 common 的 ResultCode
-import com.example.common.model.UserRoleWrapper;
+import com.example.common.response.Result; // 导入 common 的 Result
+import com.example.common.response.ResultCode; // 导入 common 的 ResultCode
+import com.example.common.dto.UserRoleWrapper;
+import com.example.common.utils.RedisUtil;
 import com.example.gateway.util.JwtUtil; // 导入 gateway 的 JwtUtil
-import com.example.gateway.util.RedisUtil; // 导入 gateway 的 RedisUtil
 import com.fasterxml.jackson.core.JsonProcessingException; // Jackson 异常
 import com.fasterxml.jackson.databind.ObjectMapper; // Jackson ObjectMapper
 import io.jsonwebtoken.Claims;
@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 @Component
 public class AuthGlobalFilter implements GlobalFilter, Ordered {
 
+
     @Autowired
     private JwtUtil jwtUtil; // gateway 的 JwtUtil
 
@@ -67,6 +68,7 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
 
     // 透传给下游服务的用户信息头
     private static final String HEADER_X_USER_ID = "X-User-Id";
+    private static final String HEADER_X_USER_USER_CODE = "X-User-Code";
     private static final String HEADER_X_USER_USERNAME = "X-User-Username";
     private static final String HEADER_X_USER_EMAIL = "X-User-Email";
     private static final String HEADER_X_USER_STATUS = "X-User-Status";
@@ -370,6 +372,9 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
                     log.debug("【AuthGlobalFilter】[请求ID: {}] 添加了内部调用 Basic Auth Header", requestId);
 
                     httpHeaders.set(HEADER_X_USER_ID, String.valueOf(userRoleWrapper.getUserId()));
+                    if (StringUtils.hasText(userRoleWrapper.getUserCode())) {
+                        httpHeaders.set(HEADER_X_USER_USER_CODE, userRoleWrapper.getUserCode());
+                    }
                     if (StringUtils.hasText(userRoleWrapper.getUsername())) {
                         httpHeaders.set(HEADER_X_USER_USERNAME, userRoleWrapper.getUsername());
                     }
@@ -385,9 +390,10 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
                     if (StringUtils.hasText(rolesStr)) {
                         httpHeaders.set(HEADER_X_USER_ROLES, rolesStr);
                     }
-                    log.info("【AuthGlobalFilter】[请求ID: {}] 添加了下游用户信息 Headers: UserId={}, Username={}, Email={}, Status={}, Roles={}",
+                    log.info("【AuthGlobalFilter】[请求ID: {}] 添加了下游用户信息 Headers: UserId={}, UserCode={},Username={}, Email={}, Status={}, Roles={}",
                             requestId,
                             userRoleWrapper.getUserId(),
+                            userRoleWrapper.getUserCode(),
                             userRoleWrapper.getUsername() != null ? userRoleWrapper.getUsername() : "N/A",
                             userRoleWrapper.getEmail() != null ? userRoleWrapper.getEmail() : "N/A",
                             userRoleWrapper.getStatus(),

@@ -3,9 +3,9 @@ package com.example.ai.service.impl;
 import com.example.ai.mapper.TestMapper;
 import com.example.ai.pojo.Test;
 import com.example.ai.service.TestServer;
-import com.example.ai.utils.RedisUtil;
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 
+import com.example.common.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

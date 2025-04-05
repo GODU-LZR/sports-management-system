@@ -1,6 +1,6 @@
 package com.example.user.controller;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 import com.example.user.pojo.SysUserRole;
 import com.example.user.service.SysUserRoleService;
 import io.swagger.v3.oas.annotations.Operation;

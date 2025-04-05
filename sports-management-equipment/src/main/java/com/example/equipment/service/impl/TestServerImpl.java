@@ -1,11 +1,11 @@
 package com.example.equipment.service.impl;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 
+import com.example.common.utils.RedisUtil;
 import com.example.equipment.mapper.TestMapper;
 import com.example.equipment.pojo.Test;
 import com.example.equipment.service.TestServer;
-import com.example.equipment.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,13 +1,13 @@
 package com.example.venue.service.impl;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 
+import com.example.common.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.venue.mapper.TestMapper;
 import com.example.venue.pojo.Test;
 import com.example.venue.service.TestServer;
-import com.example.venue.utils.RedisUtil;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;

@@ -1,6 +1,6 @@
 package com.example.user.controller;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 import com.example.user.dto.LoginRequest;
 import com.example.user.dto.LoginResponse;
 import com.example.user.dto.RegistrationRequest;

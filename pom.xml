@@ -17,7 +17,7 @@
         <module>sports-management-event</module>
         <module>sports-management-finance</module>
         <module>sports-management-forum</module>
-        <module>sports-management-notification</module>
+        <module>sports-management-middleware</module>
         <module>sports-management-ai</module>
         <module>sports-management-dependencies</module>
     </modules>

@@ -1,6 +1,6 @@
 package com.example.user.service.impl;
 
-import com.example.common.model.Result;
+import com.example.common.response.Result;
 import com.example.common.utils.SnowflakeIdGenerator;
 import com.example.user.mapper.SysRoleMapper;
 import com.example.user.mapper.SysUserRoleMapper;
@@ -9,7 +9,7 @@ import com.example.user.pojo.SysRole;
 import com.example.user.pojo.SysUserRole;
 import com.example.user.pojo.User;
 import com.example.user.service.UserService;
-import com.example.user.utils.RedisUtil;
+import com.example.common.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserServiceImpl implements UserService {
