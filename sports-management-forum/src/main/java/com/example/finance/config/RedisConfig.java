@@ -25,13 +25,13 @@ import java.time.Duration;
 @EnableCaching
 public class RedisConfig {
 
-    @Value("${redis.host}")
+    @Value("${redis.host:154.26.209.24}")
     private String host;
 
-    @Value("${redis.port}")
+    @Value("${redis.port:6379}")
     private int port;
 
-    @Value("${redis.password}")
+    @Value("${redis.password:4926644aA}")
     private String password;
 
     @Value("${redis.database:0}")
