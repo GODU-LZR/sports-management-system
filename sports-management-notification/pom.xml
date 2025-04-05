@@ -94,6 +94,11 @@
             <artifactId>feign-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Sentinel流量防护 -->
         <dependency>
@@ -129,10 +134,10 @@
         </dependency>
 
         <!--  可选: Spring Boot AMQP (RabbitMQ) (如果需要消息队列) -->
-        <!-- <dependency>
+      <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
-        </dependency> -->
+        </dependency>
 
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
@@ -143,6 +148,7 @@
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2-extension-spring6</artifactId>
         </dependency>
+
     </dependencies>
 
 </project>
