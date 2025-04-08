@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Test  {
+public class TestCLASS1 {
     // 用户ID，默认为null表示未分配ID
     private Long id = null;
     // 用户名，默认为"未命名用户"
@@ -34,7 +34,7 @@ public class Test  {
     
     @Override
     public String toString() {
-        return "Test{" +
+        return "TestCLASS1{" +
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +

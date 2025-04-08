@@ -2,7 +2,7 @@ package com.example.middleware.controller;
 
 import com.example.common.response.Result;
 
-import com.example.middleware.pojo.Test;
+import com.example.middleware.pojo.TestCLASS1;
 import com.example.middleware.service.TestServer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +21,7 @@ public class TestController {
 
     @PostMapping
     @Operation(summary = "创建测试数据")
-    public Result<Test> createTest(@RequestBody Test test) {
+    public Result<TestCLASS1> createTest(@RequestBody TestCLASS1 test) {
         return testServer.createTest(test);
     }
 
@@ -33,19 +33,19 @@ public class TestController {
 
     @PutMapping
     @Operation(summary = "更新测试数据")
-    public Result<Test> updateTest(@RequestBody Test test) {
+    public Result<TestCLASS1> updateTest(@RequestBody TestCLASS1 test) {
         return testServer.updateTest(test);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID获取测试数据")
-    public Result<Test> getTestById(@PathVariable Long id) {
+    public Result<TestCLASS1> getTestById(@PathVariable Long id) {
         return testServer.getTestById(id);
     }
 
     @GetMapping("/all")
     @Operation(summary = "获取所有测试数据")
-    public Result<List<Test>> getAllTests() {
+    public Result<List<TestCLASS1>> getAllTests() {
         return testServer.getAllTests();
     }
 }

@@ -1,14 +1,14 @@
 package com.example.middleware.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.middleware.pojo.Test;
+import com.example.middleware.pojo.TestCLASS1;
 import org.apache.ibatis.annotations.*;
 
 @Mapper
-public interface TestMapper extends BaseMapper<Test> {
+public interface TestMapper extends BaseMapper<TestCLASS1> {
 
     @Select("SELECT * FROM test WHERE username = #{username}")
-    Test selectByUsername(@Param("username") String username);
+    TestCLASS1 selectByUsername(@Param("username") String username);
 
     // 示例：使用注解自定义更新语句
     @Update("UPDATE test SET password = #{password} WHERE id = #{id}")
@@ -21,5 +21,5 @@ public interface TestMapper extends BaseMapper<Test> {
     // 示例：使用注解自定义插入语句 (如果需要更复杂的插入逻辑)
     @Insert("INSERT INTO test (username, password, email) VALUES (#{username}, #{password}, #{email})")
     @Options(useGeneratedKeys = true, keyProperty = "id") // 获取自增主键
-    int customInsert(Test test);
+    int customInsert(TestCLASS1 test);
 }

@@ -3,6 +3,8 @@ package com.example.middleware.config;
 import com.rabbitmq.client.ConnectionFactory;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,7 +28,7 @@ public class RabbitMQConfig {
         factory.setPort(properties.getPort());
         factory.setUsername(properties.getUsername());
         factory.setPassword(properties.getPassword());
-        
+
         // 测试连接是否可用
         try {
             com.rabbitmq.client.Connection connection = factory.newConnection();
@@ -36,7 +38,7 @@ public class RabbitMQConfig {
             log.error("RabbitMQ连接测试失败: {}:{}", properties.getHost(), properties.getPort(), e);
             throw new IllegalStateException("无法连接到RabbitMQ服务器: " + e.getMessage(), e);
         }
-        
+
         return factory;
     }
 
@@ -52,7 +54,7 @@ public class RabbitMQConfig {
         private boolean durable ;
         private boolean exclusive ;
         private boolean autoDelete;
-    
+
 
     }
     public RabbitMQProperties getProperties() {
