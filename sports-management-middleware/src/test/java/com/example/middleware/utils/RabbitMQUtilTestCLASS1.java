@@ -1,7 +1,6 @@
 package com.example.middleware.utils;
 
 import com.example.middleware.pojo.TestCLASS1;
-import com.example.middleware.service.RabbitmqService;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +16,7 @@ class RabbitMQUtilTestCLASS1 {
 
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
-    @Autowired
-    private RabbitmqService rabbitmqService;
+
     private static final String TEST_QUEUE = "t1";
     private static final String TEST_MESSAGE = "TestCLASS1 message";
     private static final String OBJECT_TEST_QUEUE = "test-queue";
