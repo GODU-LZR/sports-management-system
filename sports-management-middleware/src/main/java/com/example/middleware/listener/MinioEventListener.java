@@ -8,9 +8,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -21,6 +26,9 @@ public class MinioEventListener {
     
     @Autowired
     private ObjectMapper objectMapper;
+    
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     /**
      * 监听MinIO的对象创建事件
@@ -47,7 +55,7 @@ public class MinioEventListener {
                     String objectKey = firstRecord.path("s3").path("object").path("key").asText();
                     long fileSize = firstRecord.path("s3").path("object").path("size").asLong();
                     String contentType = firstRecord.path("s3").path("object").path("contentType").asText();
-                    log.info("文件上传完成 - 桶: {}, 对象: {}, 大小: {}, 类型: {}", 
+                    log.debug("文件上传完成 - 桶: {}, 对象: {}, 大小: {}, 类型: {}",
                             bucketName, objectKey, fileSize, contentType);
                     // 更新数据库中的文件记录状态
                     updateFileRecord(bucketName, objectKey, fileSize, contentType);
@@ -66,7 +74,8 @@ public class MinioEventListener {
      * @param fileSize 文件大小
      * @param contentType 文件内容类型
      */
-    private void updateFileRecord(String bucketName, String objectName, long fileSize, String contentType) {
+    @Transactional
+    public void updateFileRecord(String bucketName, String objectName, long fileSize, String contentType) {
         try {
             // 根据桶名和对象名查询文件记录
             LambdaQueryWrapper<FileUploadRecord> queryWrapper = new LambdaQueryWrapper<>();
@@ -84,11 +93,41 @@ public class MinioEventListener {
                 
                 fileRecordMapper.updateById(record);
                 log.info("文件记录状态已更新为SUCCESS, ID: {}", record.getId());
+                
+                // 通知前端文件上传完成
+                notifyFrontend(record);
             } else {
                 log.warn("未找到对应的文件记录 - 桶: {}, 对象: {}", bucketName, objectName);
             }
         } catch (Exception e) {
             log.error("更新文件记录状态失败", e);
+        }
+    }
+    
+    /**
+     * 通知前端文件上传完成
+     * 
+     * @param record 文件上传记录
+     */
+    private void notifyFrontend(FileUploadRecord record) {
+        try {
+            // 构建通知消息
+            Map<String, Object> message = new HashMap<>();
+            message.put("type", "FILE_UPLOAD_COMPLETE");
+            message.put("fileId", record.getFileId());
+            message.put("fileName", record.getFileName());
+            message.put("status", record.getStatus().toString());
+            message.put("fileSize", record.getFileSize());
+            message.put("contentType", record.getFileContentType());
+            message.put("timestamp", System.currentTimeMillis());
+            
+            // 发送WebSocket消息到特定用户
+            String destination = "/queue/file-upload/" + record.getUserId();
+            messagingTemplate.convertAndSend(destination, message);
+            
+            log.info("已通知用户 {} 文件 {} 上传完成", record.getUserId(), record.getFileId());
+        } catch (Exception e) {
+            log.error("通知前端文件上传完成失败", e);
         }
     }
 }

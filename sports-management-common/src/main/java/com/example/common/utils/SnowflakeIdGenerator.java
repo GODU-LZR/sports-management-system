@@ -1,5 +1,6 @@
 package com.example.common.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
@@ -7,6 +8,7 @@ import javax.annotation.PostConstruct;
 /**
  * 雪花算法生成唯一ID工具类
  */
+@Slf4j
 @Component
 public class SnowflakeIdGenerator {
     // 起始时间戳（2023-01-01 00:00:00）
@@ -134,6 +136,7 @@ public class SnowflakeIdGenerator {
     @Value("${snowflake.dataCenterId:1}") // 默认值为 1
     public void setDataCenterId(long dataCenterId) {
         this.dataCenterId = dataCenterId;
+
     }
 
     @Value("${snowflake.machineId:1}") // 默认值为 1
