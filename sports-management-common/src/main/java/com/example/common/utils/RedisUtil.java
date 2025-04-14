@@ -1,5 +1,7 @@
 package com.example.common.utils; // 确认包名是否正确
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONException;
 import org.slf4j.Logger; // 引入 SLF4J Logger
 import org.slf4j.LoggerFactory; // 引入 SLF4J LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,6 +172,64 @@ public class RedisUtil {
             return null;
         }
     }
+
+
+    /**
+     * 获取缓存并直接反序列化为指定类型的对象 (使用 FastJSON2)
+     *
+     * @param key   键
+     * @param clazz 目标类型的 Class 对象
+     * @param <T>   目标类型
+     * @return 反序列化后的对象，如果 key 不存在、值不是有效的 JSON 或反序列化失败，则返回 null
+     */
+    public <T> T getFromJson(String key, Class<T> clazz) {
+        try {
+            if (key == null || clazz == null) {
+                log.warn("getFromJson 调用参数无效: key={}, clazz={}", key, clazz);
+                return null;
+            }
+            // 1. 获取原始数据
+            Object cachedData = get(key); // 调用内部的 get 方法，包含日志
+
+            // 2. 检查是否为空 (缓存未命中)
+            if (cachedData == null) {
+                // get 方法已经记录了 debug 日志，这里无需重复记录 cache miss
+                return null;
+            }
+
+            // 3. 尝试将获取到的数据转换为 JSON 字符串，然后解析
+            // FastJSON2 的 toJSONString 可以处理 String, JSONObject, Map 等多种输入
+            String jsonString = JSON.toJSONString(cachedData);
+            // 检查转换后的字符串是否有效
+            if (jsonString == null || jsonString.isEmpty() || "null".equalsIgnoreCase(jsonString.trim())) {
+                log.warn("getFromJson - Data for key '{}' converted to empty or null JSON string. Original type: {}", key, cachedData.getClass().getName());
+                return null;
+            }
+
+            // 4. 解析 JSON 字符串
+            T result = JSON.parseObject(jsonString, clazz);
+            log.debug("getFromJson - Successfully deserialized key '{}' to type {}", key, clazz.getSimpleName());
+            return result;
+
+        } catch (JSONException jsonEx) { // 捕获 FastJSON 解析异常
+            // 尝试获取原始数据用于日志记录，如果失败则记录 null
+            Object rawDataForLog = null;
+            try { rawDataForLog = get(key); } catch (Exception ignored) {}
+            log.error("getFromJson - Failed to parse JSON for key '{}' into type {}. Invalid JSON format? Raw data sample: {}",
+                    key, clazz.getSimpleName(), truncate(JSON.toJSONString(rawDataForLog), 200), jsonEx); // 记录截断后的原始数据
+            return null;
+        } catch (Exception e) { // 捕获其他潜在异常
+            log.error("getFromJson - Failed to get or deserialize key '{}' into type {}", key, clazz.getSimpleName(), e);
+            return null;
+        }
+    }
+
+    // 辅助方法：截断字符串用于日志
+    private String truncate(String str, int maxLength) {
+        if (str == null) return null;
+        return str.length() <= maxLength ? str : str.substring(0, maxLength) + "...";
+    }
+
 
     /**
      * 设置缓存 (操作成功返回 true，失败返回 false)
