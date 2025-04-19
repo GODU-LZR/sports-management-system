@@ -1,8 +1,7 @@
 package com.example.middleware.utils;
 
-import com.example.middleware.service.impl.ResendEmailService;
+import com.example.middleware.notification.ResendEmailService;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

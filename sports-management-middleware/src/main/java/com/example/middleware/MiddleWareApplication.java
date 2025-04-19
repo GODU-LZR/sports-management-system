@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Import;
 @SpringBootApplication(scanBasePackages = "com.example")
 @EnableDiscoveryClient
 @EnableDubbo
-
 @Import({WebSecurityConfig.class, OpenAPIConfig.class, WebMvcConfig.class, JacksonConfig.class, RedisConfig.class, RedisUtil.class}) // 确保加载 common 模块的配置
 public class MiddleWareApplication {
     public static void main(String[] args) {

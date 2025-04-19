@@ -1,30 +1,26 @@
-package com.example.middleware.listener;
+package com.example.middleware.minio.listener;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.common.utils.RedisUtil;
-import com.example.middleware.config.MinioClientConfig;
-import com.example.middleware.mapper.FileRecordMapper;
-import com.example.middleware.pojo.FileUploadRecord;
-import com.example.middleware.utils.MinioUtil;
+import com.example.middleware.minio.mapper.FileRecordMapper;
+import com.example.middleware.minio.pojo.FileUploadRecord;
+import com.example.middleware.minio.MinioUtil;
+import com.example.middleware.utils.RedisKEY;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-import static com.example.middleware.utils.RedisKEY.PIC_VIEW_URL_KEY;
 
 @Slf4j
 @Component
@@ -110,7 +106,7 @@ public class MinioEventListener {
                 log.info("文件记录状态已更新为SUCCESS, ID: {}", record.getId());
 
                 String url= MinioUtil.buildImageUrl(bucketName,objectName);
-                redisUtil.set(PIC_VIEW_URL_KEY+extractLeadingNumbers(objectName),url);
+                redisUtil.set(RedisKEY.PIC_VIEW_URL_KEY+extractLeadingNumbers(objectName),url);
                 // 通知前端文件上传完成
                 notifyFrontend(record);
             } else {

@@ -1,4 +1,4 @@
-package com.example.middleware.config;
+package com.example.middleware.minio.config;
 
 import io.minio.MinioAsyncClient;
 import io.minio.MinioClient;

@@ -1,7 +1,7 @@
 package com.example.middleware.utils;
 
 import com.example.middleware.pojo.TestCLASS1;
-
+import com.example.middleware.rabbitmq.RabbitMQUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(classes = com.example.middleware.MiddleWareApplication.class)
 class RabbitMQUtilTestCLASS1 {
 
     @Autowired

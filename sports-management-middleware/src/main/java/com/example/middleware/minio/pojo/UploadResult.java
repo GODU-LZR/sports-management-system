@@ -1,4 +1,4 @@
-package com.example.middleware.pojo;
+package com.example.middleware.minio.pojo;
 
 import lombok.Data;
 

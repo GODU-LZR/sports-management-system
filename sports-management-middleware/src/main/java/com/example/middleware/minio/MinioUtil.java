@@ -1,6 +1,6 @@
-package com.example.middleware.utils;
+package com.example.middleware.minio;
 
-import com.example.middleware.pojo.UploadResult;
+import com.example.middleware.minio.pojo.UploadResult;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.http.Method;

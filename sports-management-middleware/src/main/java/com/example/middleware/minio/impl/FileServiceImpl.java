@@ -1,14 +1,14 @@
-package com.example.middleware.service.impl;
+package com.example.middleware.minio.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.common.services.IFileService;
 import com.example.common.utils.RedisUtil;
-import com.example.middleware.mapper.FileRecordMapper;
-import com.example.middleware.pojo.FileUploadRecord;
-import com.example.middleware.pojo.UploadResult;
-import com.example.middleware.utils.MinioUtil;
+import com.example.common.utils.SnowflakeIdGenerator;
+import com.example.middleware.minio.MinioUtil;
+import com.example.middleware.minio.mapper.FileRecordMapper;
+import com.example.middleware.minio.pojo.FileUploadRecord;
+import com.example.middleware.minio.pojo.UploadResult;
 import com.example.middleware.utils.RedisKEY;
-import com.example.middleware.utils.SnowflakeIdGeneratorM;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +23,18 @@ public class FileServiceImpl implements IFileService {
     RedisUtil redisUtil;
     @Autowired
     private FileRecordMapper fileRecordMapper;
+    @Autowired
+    SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public <T> T createUploadUrl(String bucketName, String userId, String fileName) {
         // 创建自定义返回结果对象
-        UploadResult uploadR = redisUtil.getFromJson(userId, UploadResult.class);
+        UploadResult uploadR = redisUtil.getFromJson(RedisKEY.PIC_UPLOAD_URL_KEY+userId, UploadResult.class);
        if (uploadR==null){
            uploadR=createUploadUrlUnCycle(bucketName,userId,fileName);
        }
-        boolean r = redisUtil.set(userId, uploadR, 3600);
+        boolean r = redisUtil.set(RedisKEY.PIC_UPLOAD_URL_KEY+userId, uploadR, 3600);
         return (T) uploadR;
     }
 
@@ -54,7 +56,7 @@ public class FileServiceImpl implements IFileService {
     @Transactional(rollbackFor = Exception.class)
     public <T> T createUploadUrlUnCycle(String bucketName, String userId, String fileName) {
         UploadResult uploadR=new UploadResult();
-        String fileId = SnowflakeIdGeneratorM.nextIdStr();
+        String fileId =String.valueOf( snowflakeIdGenerator.nextId());
         String objectName = fileId + bucketName + userId;
         uploadR = MinioUtil.getUploadUrl(bucketName, objectName);
         uploadR.setFileRecordID(fileId);

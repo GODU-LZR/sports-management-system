@@ -1,4 +1,4 @@
-package com.example.middleware.factory;
+package com.example.middleware.rabbitmq.factory;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;

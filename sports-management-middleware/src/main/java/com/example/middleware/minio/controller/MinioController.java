@@ -1,12 +1,10 @@
-package com.example.middleware.controller;
+package com.example.middleware.minio.controller;
 
-import com.example.common.dto.UserRoleWrapper;
 import com.example.common.response.Result;
 import com.example.common.services.IFileService;
 import com.example.common.utils.RedisUtil;
-import com.example.middleware.pojo.UploadResult;
+import com.example.middleware.minio.pojo.UploadResult;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;

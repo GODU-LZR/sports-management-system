@@ -1,8 +1,8 @@
-package com.example.middleware.utils;
+package com.example.middleware.rabbitmq;
 
 import com.alibaba.fastjson2.JSON;
-import com.example.middleware.config.RabbitMQConfig;
-import com.example.middleware.factory.ChannelFactory;
+import com.example.middleware.rabbitmq.config.RabbitMQConfig;
+import com.example.middleware.rabbitmq.factory.ChannelFactory;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;

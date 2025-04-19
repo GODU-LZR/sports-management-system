@@ -1,4 +1,4 @@
-package com.example.middleware.service.impl;
+package com.example.middleware.notification;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
