@@ -33,6 +33,7 @@ public class FileServiceImpl implements IFileService {
         UploadResult uploadR = redisUtil.getFromJson(RedisKEY.PIC_UPLOAD_URL_KEY+userId, UploadResult.class);
        if (uploadR==null){
            uploadR=createUploadUrlUnCycle(bucketName,userId,fileName);
+           System.out.println(uploadR.getUrl());
        }
         boolean r = redisUtil.set(RedisKEY.PIC_UPLOAD_URL_KEY+userId, uploadR, 3600);
         return (T) uploadR;
@@ -74,7 +75,7 @@ public class FileServiceImpl implements IFileService {
             log.error("无法插入数据库");
             return null;
         }
-        return null;
+        return (T) uploadR;
     }
     @Override
     public <T> T createUploadUrlUnCycle(String bucketName,String userId) {
