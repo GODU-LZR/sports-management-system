@@ -1,10 +1,12 @@
 package com.example.event.service;
 
 import com.example.event.entity.SportEvent;
+import org.springframework.stereotype.Service;
 
 /**
  * 赛事服务接口
  */
+
 public interface EventService<T extends SportEvent> {
     
     /**
