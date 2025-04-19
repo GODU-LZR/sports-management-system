@@ -31,8 +31,13 @@ public interface CategoryMapper {
 
     /**
      * 更新器材分类
-     * @param categoryDTO
+     * @param
      */
-    @Update("update equipment_category set name = #{name},description = #{description},stock = #{sotck},value = #{value},total = #{total},modified_id = #{modifiedId},modified_time = #{modifiedTime} where category_id = #{categoryId}")
+    @Update("update equipment_category set name = #{name}," +
+            "description = #{description},stock = #{stock}" +
+            ",value = #{value},total = #{total}," +
+            "modified_id = #{modifiedId}," +
+            "modified_time = #{modifiedTime}" +
+            " where category_id = #{categoryId}")
     void update(EquipmentCategory equipmentCategory);
 }

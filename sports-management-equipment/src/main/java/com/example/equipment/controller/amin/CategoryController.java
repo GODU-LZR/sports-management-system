@@ -38,14 +38,14 @@ public class CategoryController {
      * @return
      */
     @GetMapping("/selectAll")
-    public Result<CategoryVO> selectAll()
+    public Result<List<CategoryVO>> selectAll()
     {
-
          List<CategoryVO> list = categoryService.selectAll();
-
-        return Result.success();
+         log.info("查询到的器材分类为:{}",list);
+        return Result.success(list);
     }
 
+    @PutMapping("/updateCategory")
     public Result updateCategory(@RequestBody CategoryDTO categoryDTO,@Parameter(hidden = true) UserConstant currentUser){
 
         log.info("Controller层拿到的更新器材分类的信息为：{}",categoryDTO);

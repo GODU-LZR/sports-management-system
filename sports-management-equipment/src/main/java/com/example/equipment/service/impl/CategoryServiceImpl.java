@@ -63,7 +63,7 @@ public class CategoryServiceImpl implements CategoryService {
 
        List<CategoryVO> list = categoryMapper.selectAll();
 
-        return null;
+        return list;
     }
 
     @Override
@@ -71,12 +71,14 @@ public class CategoryServiceImpl implements CategoryService {
 
 
         EquipmentCategory equipmentCategory = new EquipmentCategory();
+
         BeanUtils.copyProperties(categoryDTO,equipmentCategory);
 
-        equipmentCategory.setModifiedTime(LocalDateTime.now());
+        equipmentCategory.setModifiedTime(LocalDateTime.now());  //设置修改实现
 
         equipmentCategory.setModifiedId(currentUser.getUserId());
 
+        log.info("Service层修改器材分类的信息为:{}",equipmentCategory);
         categoryMapper.update(equipmentCategory);
 
     }
