@@ -3,7 +3,6 @@ package com.example.event.strategy;
 import com.example.event.decorator.BasketballMatchRecordDecorator;
 import com.example.event.decorator.BasketballStatisticsDecorator;
 import com.example.event.entity.BasketballEvent;
-import com.example.event.entity.SportEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
