@@ -25,4 +25,7 @@ public interface TestServer {
 
     @Operation(summary = "获取所有测试数据")
     Result<List<Test>> getAllTests();
+
+    @Operation(summary = "发送邮箱验证码")
+    Result<Boolean> sendVerificationEmail(String email);
 }

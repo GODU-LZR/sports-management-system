@@ -2,11 +2,11 @@ package com.example.user.controller;
 
 import com.example.common.constant.UserConstant;
 import com.example.common.response.Result;
-import com.example.common.dto.UserRoleWrapper;
 import com.example.user.pojo.Test;
 import com.example.user.service.TestServer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,6 +53,15 @@ public class TestController {
     public Result<List<Test>> getAllTests(@Parameter(hidden = true) UserConstant currentUser) {
         System.out.println(currentUser);
         return testServer.getAllTests();
+    }
+
+    @PostMapping("/sendVerificationCode")
+    @Operation(summary = "发送邮箱验证码 (通过 Dubbo)", description = "调用中间件服务发送验证码")
+    @ApiResponse(responseCode = "200", description = "返回是否成功调用服务以及相关信息")
+    public Result<Boolean> triggerSendCode(
+            @Parameter(description = "目标邮箱地址", required = true, example = "test@example.com")
+            @RequestParam String email) {
+        return testServer.sendVerificationEmail(email);
     }
 
 }

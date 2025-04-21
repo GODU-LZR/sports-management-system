@@ -1,4 +1,4 @@
-package com.example.middleware.config;
+package com.example.middleware.notification.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -101,8 +101,8 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
         WHITE_LIST.add("/api/finance/v3/api-docs/");
         WHITE_LIST.add("/api/forum/v3/api-docs");
         WHITE_LIST.add("/api/forum/v3/api-docs/");
-        WHITE_LIST.add("/api/notification/v3/api-docs");
-        WHITE_LIST.add("/api/notification/v3/api-docs/");
+        WHITE_LIST.add("/api/middleware/v3/api-docs");
+        WHITE_LIST.add("/api/middleware/v3/api-docs/");
         WHITE_LIST.add("/api/ai/v3/api-docs");
         WHITE_LIST.add("/api/ai/v3/api-docs/");
     }

@@ -1,6 +1,6 @@
 package com.example.middleware.utils;
 
-import com.example.middleware.notification.ResendEmailService;
+import com.example.middleware.notification.service.impl.ResendEmailServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ class ResendEmailServiceTest {
     private static final Logger log = LoggerFactory.getLogger(ResendEmailServiceTest.class);
 
     @Autowired(required = false)
-    private ResendEmailService emailService; // 注入你的邮件服务
+    private ResendEmailServiceImpl emailService; // 注入你的邮件服务
 
     // !!! 重要提示 !!!
     // 这是一个集成测试，它会真实地调用 Resend API 发送邮件并消耗你的额度。
