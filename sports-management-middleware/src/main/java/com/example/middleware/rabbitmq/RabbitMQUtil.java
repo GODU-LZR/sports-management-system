@@ -233,7 +233,7 @@ public class RabbitMQUtil {
         this.currentQueueName=testQueue;
 
     }
-    
+
     /**
      * 发送对象消息到默认队列
      *

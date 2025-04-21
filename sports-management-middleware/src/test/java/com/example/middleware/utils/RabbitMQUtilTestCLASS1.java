@@ -57,7 +57,7 @@ class RabbitMQUtilTestCLASS1 {
         TestCLASS1 testObj = new TestCLASS1();
         
         // 使用sendObject方法直接发送对象
-        rabbitMQUtil.sendObject(testObj, OBJECT_TEST_QUEUE);
+        rabbitMQUtil.sendObject(testObj, "dd421");
         System.out.println("已发送TestCLASS1对象到队列: " + OBJECT_TEST_QUEUE);
     }
     

@@ -5,13 +5,15 @@ import com.example.common.utils.RedisUtil;
 import com.example.finance.mapper.TestMapper;
 import com.example.finance.pojo.Test;
 import com.example.finance.service.TestServer;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
+//@DubboService(version = "1.0.0", interfaceClass = TestServer.class)
 @Service
 public class TestServerImpl implements TestServer {
 
