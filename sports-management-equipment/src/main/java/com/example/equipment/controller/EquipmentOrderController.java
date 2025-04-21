@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @NoArgsConstructor
 public class EquipmentOrderController {
 
-    @Autowired
+//    @Autowired
     private EquipmentOrderServiceImpl equipmentOrderService;
     /**
      * 新建一个器材订单
