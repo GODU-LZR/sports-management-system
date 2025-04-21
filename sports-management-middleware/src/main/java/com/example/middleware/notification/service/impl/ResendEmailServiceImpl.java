@@ -1,5 +1,6 @@
-package com.example.middleware.notification;
+package com.example.middleware.notification.service.impl;
 
+import com.example.middleware.notification.service.ResendEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class ResendEmailService {
+public class ResendEmailServiceImpl implements ResendEmailService {
 
-    private static final Logger log = LoggerFactory.getLogger(ResendEmailService.class);
+    private static final Logger log = LoggerFactory.getLogger(ResendEmailServiceImpl.class);
 
     @Autowired(required = false)
     private RestTemplate restTemplate; // 确保 RestTemplate Bean 已配置, Spring Boot 会自动配置一个
@@ -73,10 +74,4 @@ public class ResendEmailService {
         }
     }
 
-    // 可选: 配置 RestTemplate Bean (如果需要自定义)
-    // 通常 Spring Boot 会自动配置一个，除非你需要特殊设置
-    // @Bean 
-    // public RestTemplate restTemplate() {
-    //     return new RestTemplate();
-    // }
 }

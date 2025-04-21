@@ -2,6 +2,7 @@ package com.example.user.service.impl;
 
 import com.example.common.response.Result;
 import com.example.common.utils.SnowflakeIdGenerator;
+import com.example.common.utils.UserCodeGenerateUtil;
 import com.example.user.mapper.SysRoleMapper;
 import com.example.user.mapper.SysUserRoleMapper;
 import com.example.user.mapper.UserMapper;
@@ -34,6 +35,9 @@ public class UserServiceImpl implements UserService {
     private RedisUtil redisUtil;
     @Autowired(required = false)
     private SnowflakeIdGenerator snowflakeIdGenerator;
+    // 注入新的 UserCodeGenerateUtil，变量名也建议修改
+    @Autowired
+    private UserCodeGenerateUtil userCodeGenerateUtil;
 
     private static final String USER_CACHE_KEY_PREFIX = "user:";
     private static final String USER_LOCK_KEY_PREFIX = "lock:user:";
