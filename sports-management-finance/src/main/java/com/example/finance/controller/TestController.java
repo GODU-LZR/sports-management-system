@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/test")
 @Tag(name = "TestController", description = "测试接口控制器")
 public class TestController {
-    @DubboReference(version = "1.0.0", check = false)
+    @DubboReference(version = "1.0.0", check = false,retries = 0)
     TestServer testServer;
 
 

@@ -9,8 +9,8 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-@TableName("event_basketabll_team")
-public class Team {
+@TableName("event_basketball_team")
+public class BasketballTeam {
     @TableId(type = IdType.AUTO)
     @TableField("team_id")
     private Long teamId;

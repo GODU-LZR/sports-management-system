@@ -8,8 +8,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("event_basketabll_match")
-public class Match {
+@TableName("event_basketball_match")
+public class BasketballMatch {
     @TableId("match_id")
     private String matchId;
 
@@ -24,8 +24,8 @@ public class Match {
 
     // 非数据库字段需显式标注
     @TableField(exist = false)
-    private Team homeTeam;
+    private BasketballTeam homeBasketballTeam;
 
     @TableField(exist = false)
-    private Team awayTeam;
+    private BasketballTeam awayBasketballTeam;
 }
