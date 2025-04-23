@@ -2,23 +2,16 @@ package com.example.event.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.event.DTO.*;
-import com.example.event.dao.basketball.BasketballMatch;
-import com.example.event.dao.basketball.BasketballMatchQuarter;
-import com.example.event.dao.basketball.BasketballTeam;
-import com.example.event.dao.basketball.BasketballTeamStats;
+import com.example.event.dao.basketball.*;
 import com.example.event.entity.BasketballPlayer;
 import com.example.event.entity.BasketballPlayerStats;
-import com.example.event.mapper.basketball.BasketballMatchMapper;
-import com.example.event.mapper.basketball.BasketballMatchQuarterMapper;
-import com.example.event.mapper.basketball.BasketballTeamMapper;
-import com.example.event.mapper.basketball.BasketballTeamStatsMapper;
+import com.example.event.mapper.basketball.*;
 import com.example.event.service.MatchDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +31,8 @@ public class MatchDataServiceImpl implements MatchDataService {
     private BasketballMatchQuarterMapper basketballMatchQuarterMapper;
     @Autowired
     private BasketballTeamStatsMapper basketballTeamStatsMapper;
+    @Autowired
+    private BasketballMatchPlayerDetailMapper basketballMatchPlayerDetailMapper;
     @Override
     public List<TeamSummary> getSummary(String matchId) {
         // 从数据库获取比赛信息
@@ -135,59 +130,55 @@ public class MatchDataServiceImpl implements MatchDataService {
     }
 
     @Override
+
     public HighlightsData getHighlights(String matchId) {
-        // 从数据库获取球员统计数据
-        // 假设有一个方法可以获取比赛中的球员统计数据
-        List<BasketballPlayerStats> playerStats = getPlayerStatsByMatchId(matchId);
-        if (playerStats == null || playerStats.isEmpty()) {
-            return new HighlightsData(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        HighlightsData highlights = new HighlightsData();
+        List<BasketballMatchPlayerDetails>[] playerDetailsList = getPlayerStatsByMatchId(matchId);
+
+        if (playerDetailsList != null) {
+            for (List<BasketballMatchPlayerDetails> playerDetails : playerDetailsList) {
+                // 找出得分最高的球员
+                Optional<BasketballMatchPlayerDetails> topScorer = playerDetails.stream()
+                        .max(Comparator.comparingInt(BasketballMatchPlayerDetails::getPoints));
+                topScorer.ifPresent(player -> highlights.pt.add(new PlayerScore(player.getName(), player.getPoints())));
+
+                // 找出篮板最高的球员
+                Optional<BasketballMatchPlayerDetails> topRebounder = playerDetails.stream()
+                        .max(Comparator.comparingInt(BasketballMatchPlayerDetails::getRebounds));
+                topRebounder.ifPresent(player -> highlights.reb.add(new PlayerScore(player.getName(), player.getRebounds())));
+
+                // 找出助攻最高的球员
+                Optional<BasketballMatchPlayerDetails> topAssister = playerDetails.stream()
+                        .max(Comparator.comparingInt(BasketballMatchPlayerDetails::getAssists));
+                topAssister.ifPresent(player -> highlights.ast.add(new PlayerScore(player.getName(), player.getAssists())));
+            }
         }
-        
-        // 按得分排序并获取前2名
-        List<PlayerScore> topScorers = playerStats.stream()
-                .sorted(Comparator.comparing(BasketballPlayerStats::getPoints).reversed())
-                .limit(2)
-                .map(stats -> {
-                    BasketballPlayer player = getPlayerById(stats.getPlayerId());
-                    return new PlayerScore(player != null ? player.getName() : "未知", stats.getPoints());
-                })
-                .collect(Collectors.toList());
-        
-        // 按篮板排序并获取前2名
-        List<PlayerScore> topRebounders = playerStats.stream()
-                .sorted(Comparator.comparing(BasketballPlayerStats::getRebounds).reversed())
-                .limit(2)
-                .map(stats -> {
-                    BasketballPlayer player = getPlayerById(stats.getPlayerId());
-                    return new PlayerScore(player != null ? player.getName() : "未知", stats.getRebounds());
-                })
-                .collect(Collectors.toList());
-        
-        // 按助攻排序并获取前2名
-        List<PlayerScore> topAssisters = playerStats.stream()
-                .sorted(Comparator.comparing(BasketballPlayerStats::getAssists).reversed())
-                .limit(2)
-                .map(stats -> {
-                    BasketballPlayer player = getPlayerById(stats.getPlayerId());
-                    return new PlayerScore(player != null ? player.getName() : "未知", stats.getAssists());
-                })
-                .collect(Collectors.toList());
-        
-        return new HighlightsData(topScorers, topRebounders, topAssisters);
+        return highlights;
     }
     
     // 辅助方法：根据比赛ID获取球员统计数据
-    private List<BasketballPlayerStats> getPlayerStatsByMatchId(String matchId) {
+    private List<BasketballMatchPlayerDetails>[] getPlayerStatsByMatchId(String matchId) {
         // 使用QueryWrapper直接查询
-        QueryWrapper<BasketballPlayerStats> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<BasketballMatchPlayerDetails> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("match_id", matchId);
-        List<BasketballPlayerStats> playerStats = new ArrayList<>();
+
         try {
-            playerStats = new com.baomidou.mybatisplus.extension.service.impl.ServiceImpl<com.baomidou.mybatisplus.core.mapper.BaseMapper<BasketballPlayerStats>, BasketballPlayerStats>(){}.list(queryWrapper);
+            List<BasketballMatchPlayerDetails> playerStatsList =basketballMatchPlayerDetailMapper.selectList(queryWrapper);
+            if (playerStatsList!=null){
+
+//            知道具体id的写法
+//            Map<Integer,List<BasketballMatchPlayerDetails>>integerListMap=playerStatsList.stream().collect(Collectors.groupingBy(BasketballMatchPlayerDetails::getTeamId));
+            Predicate<BasketballMatchPlayerDetails>isTeamOne=plater->plater.getTeamId().equals(playerStatsList.get(1).getTeamId());
+            Map<Boolean,List<BasketballMatchPlayerDetails>>partitionedPlayers=playerStatsList.stream().collect(Collectors.partitioningBy(isTeamOne));
+            List<BasketballMatchPlayerDetails> teamOne=partitionedPlayers.get(true);
+            List<BasketballMatchPlayerDetails> teamTow=partitionedPlayers.get(false);
+            return  new List[]{teamOne, teamTow};
+
+            }
         } catch (Exception e) {
             // 异常处理
         }
-        return playerStats;
+       return null;
     }
     
     // 辅助方法：根据球员ID获取球员信息

@@ -1,4 +1,4 @@
-package com.example.event.dao.basketball;
+package com.example.event.dao.basketball.common;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;

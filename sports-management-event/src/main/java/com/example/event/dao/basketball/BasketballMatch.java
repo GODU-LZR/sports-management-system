@@ -14,10 +14,10 @@ public class BasketballMatch {
     private String matchId;
 
     @TableField("home_team_id")
-    private Long homeTeamId;
+    private Integer homeTeamId;
 
     @TableField("away_team_id")
-    private Long awayTeamId;
+    private Integer awayTeamId;
 
     @TableField("match_time")
     private LocalDateTime matchTime;

@@ -4,11 +4,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
+import com.example.event.dao.basketball.common.MatchQuarterKey;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 @Data
 @TableName("event_basketball_match_quarters")
 public class BasketballMatchQuarter {
