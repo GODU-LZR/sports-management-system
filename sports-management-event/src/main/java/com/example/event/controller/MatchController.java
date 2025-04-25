@@ -74,14 +74,14 @@ public class MatchController {
     /**
      * 接口5：投篮热图数据（这里只返回命中/打铁的总数和百分比）
      */
-    @GetMapping("/shot-chart")
-    public Result<ShotChart> getShotChart() {
-        ShotChart data = new ShotChart(
-                new ShotChart.TeamShot("Grizzlies", 42, 86, 48.8),
-                new ShotChart.TeamShot("Warriors",  39, 85, 45.9)
-        );
-        return Result.success(data);
-    }
+//    @GetMapping("/shot-chart")
+//    public Result<ShotChart> getShotChart() {
+//        ShotChart data = new ShotChart(
+//                new ShotChart.TeamShot("Grizzlies", 42, 86, 48.8),
+//                new ShotChart.TeamShot("Warriors",  39, 85, 45.9)
+//        );
+//        return Result.success(data);
+//    }
 
     // ===== 内部静态类定义所有返回结构 =====
 

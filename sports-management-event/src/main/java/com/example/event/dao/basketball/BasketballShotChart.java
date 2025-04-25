@@ -29,8 +29,8 @@ public class BasketballShotChart implements Serializable {
     /**
      * 球队ID
      */
-    @TableId(value = "team_id", type = IdType.INPUT)
-    private Long teamId;
+    @TableField(value = "team_id")
+    private Integer teamId;
 
     /**
      * 命中数

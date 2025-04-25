@@ -251,30 +251,15 @@ public class MatchDataServiceImpl implements MatchDataService {
 
     @Override
     public ShotChart getShotChart(String matchId) {
-        // 从数据库获取比赛信息
-        BasketballMatch match = basketballMatchMapper.selectById(matchId);
-        if (match == null) {
-            return new ShotChart(new ShotChart.TeamShot("", 0, 0, 0), new ShotChart.TeamShot("", 0, 0, 0));
+
+
+        ShotChart teamStats = basketballShotChartMapper.selectShotChart(matchId);
+        teamStats.setMatchId(matchId);
+        System.out.println("tttt: " + teamStats.getMatchId());
+
+        if (teamStats == null) {
+            throw new RuntimeException();
         }
-
-
-
-        // 获取比赛统计数据
-        QueryWrapper<BasketballTeamStats> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("match_id", matchId);
-
-        List<BasketballTeamStats> teamStats = new ArrayList<>(); // 使用QueryWrapper直接查询
-        try {
-            teamStats = basketballTeamStatsMapper.selectList(queryWrapper);
-        } catch (Exception e) {
-            // 异常处理
-        }
-
-        ShotChart.TeamShot homeShot = new ShotChart.TeamShot("", 0, 0, 0);
-        ShotChart.TeamShot awayShot = new ShotChart.TeamShot("", 0, 0, 0);
-
-
-
-        return new ShotChart(awayShot, homeShot);
+        return teamStats;
     }
 }
