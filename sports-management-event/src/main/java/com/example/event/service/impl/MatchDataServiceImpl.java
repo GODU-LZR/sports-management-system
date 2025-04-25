@@ -4,13 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.event.DTO.*;
 import com.example.event.dao.basketball.*;
 import com.example.event.entity.BasketballPlayer;
-import com.example.event.entity.BasketballPlayerStats;
 import com.example.event.mapper.basketball.*;
 import com.example.event.service.MatchDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -20,19 +20,22 @@ import java.util.stream.Collectors;
  * 从数据库获取真实数据
  */
 @Service
-public class MatchDataServiceImpl implements MatchDataService {  
+public class MatchDataServiceImpl implements MatchDataService {
     @Autowired
     private BasketballMatchMapper basketballMatchMapper;
-    
+
     @Autowired
     private BasketballTeamMapper basketballTeamMapper;
-    
+
     @Autowired
     private BasketballMatchQuarterMapper basketballMatchQuarterMapper;
     @Autowired
     private BasketballTeamStatsMapper basketballTeamStatsMapper;
     @Autowired
     private BasketballMatchPlayerDetailMapper basketballMatchPlayerDetailMapper;
+    @Autowired
+    private BasketballShotChartMapper basketballShotChartMapper;
+
     @Override
     public List<TeamSummary> getSummary(String matchId) {
         // 从数据库获取比赛信息
@@ -40,11 +43,11 @@ public class MatchDataServiceImpl implements MatchDataService {
         if (match == null) {
             return new ArrayList<>();
         }
-        
+
         // 获取主队和客队信息
         BasketballTeam homeTeam = basketballTeamMapper.selectById(match.getHomeTeamId());
         BasketballTeam awayTeam = basketballTeamMapper.selectById(match.getAwayTeamId());
-        
+
         // 获取比赛统计数据
         QueryWrapper<BasketballTeamStats> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("match_id", matchId);
@@ -54,16 +57,16 @@ public class MatchDataServiceImpl implements MatchDataService {
         } catch (Exception e) {
             // 异常处理
         }
-        
+
         List<TeamSummary> summaries = new ArrayList<>();
-        
+
         // 构建主队摘要
         if (homeTeam != null) {
             String homeSeed = homeTeam.getConference() + "第" + homeTeam.getRankPosition();
             int homePoints = 0;
             double homeVotePct = 0.0;
             int homeVotes = 0;
-            
+
             // 查找主队统计数据
             for (BasketballTeamStats stats : teamStats) {
                 if (stats.getTeamId().equals(homeTeam.getTeamId())) {
@@ -74,17 +77,17 @@ public class MatchDataServiceImpl implements MatchDataService {
                     break;
                 }
             }
-            
+
             summaries.add(new TeamSummary(homeTeam.getTeamName(), homePoints, homeSeed, homeVotes, homeVotePct));
         }
-        
+
         // 构建客队摘要
         if (awayTeam != null) {
             String awaySeed = awayTeam.getConference() + "第" + awayTeam.getRankPosition();
             int awayPoints = 0;
             double awayVotePct = 0.0;
             int awayVotes = 0;
-            
+
             // 查找客队统计数据
             for (BasketballTeamStats stats : teamStats) {
                 if (stats.getTeamId().equals(awayTeam.getTeamId())) {
@@ -95,10 +98,10 @@ public class MatchDataServiceImpl implements MatchDataService {
                     break;
                 }
             }
-            
+
             summaries.add(new TeamSummary(awayTeam.getTeamName(), awayPoints, awaySeed, awayVotes, awayVotePct));
         }
-        
+
         return summaries;
     }
 
@@ -109,9 +112,9 @@ public class MatchDataServiceImpl implements MatchDataService {
         if (quarters == null || quarters.isEmpty()) {
             return new ArrayList<>();
         }
-        
+
         List<TeamQuarters> teamQuarters = new ArrayList<>();
-        
+
         for (BasketballMatchQuarter quarter : quarters) {
             // 获取球队信息
             BasketballTeam team = basketballTeamMapper.selectById(quarter.getId().getTeamId());
@@ -125,7 +128,7 @@ public class MatchDataServiceImpl implements MatchDataService {
                 ));
             }
         }
-        
+
         return teamQuarters;
     }
 
@@ -140,22 +143,22 @@ public class MatchDataServiceImpl implements MatchDataService {
                 // 找出得分最高的球员
                 Optional<BasketballMatchPlayerDetails> topScorer = playerDetails.stream()
                         .max(Comparator.comparingInt(BasketballMatchPlayerDetails::getPoints));
-                topScorer.ifPresent(player -> highlights.pt.add(new PlayerScore(player.getName(), player.getPoints())));
+                topScorer.ifPresent(player -> highlights.pt.add(new PlayerScore(player.getName(), player.getPoints(), player.getTeamId())));
 
                 // 找出篮板最高的球员
                 Optional<BasketballMatchPlayerDetails> topRebounder = playerDetails.stream()
                         .max(Comparator.comparingInt(BasketballMatchPlayerDetails::getRebounds));
-                topRebounder.ifPresent(player -> highlights.reb.add(new PlayerScore(player.getName(), player.getRebounds())));
+                topRebounder.ifPresent(player -> highlights.reb.add(new PlayerScore(player.getName(), player.getRebounds(), player.getTeamId())));
 
                 // 找出助攻最高的球员
                 Optional<BasketballMatchPlayerDetails> topAssister = playerDetails.stream()
                         .max(Comparator.comparingInt(BasketballMatchPlayerDetails::getAssists));
-                topAssister.ifPresent(player -> highlights.ast.add(new PlayerScore(player.getName(), player.getAssists())));
+                topAssister.ifPresent(player -> highlights.ast.add(new PlayerScore(player.getName(), player.getAssists(), player.getTeamId())));
             }
         }
         return highlights;
     }
-    
+
     // 辅助方法：根据比赛ID获取球员统计数据
     private List<BasketballMatchPlayerDetails>[] getPlayerStatsByMatchId(String matchId) {
         // 使用QueryWrapper直接查询
@@ -163,29 +166,30 @@ public class MatchDataServiceImpl implements MatchDataService {
         queryWrapper.eq("match_id", matchId);
 
         try {
-            List<BasketballMatchPlayerDetails> playerStatsList =basketballMatchPlayerDetailMapper.selectList(queryWrapper);
-            if (playerStatsList!=null){
+            List<BasketballMatchPlayerDetails> playerStatsList = basketballMatchPlayerDetailMapper.selectList(queryWrapper);
+            if (playerStatsList != null) {
 
 //            知道具体id的写法
 //            Map<Integer,List<BasketballMatchPlayerDetails>>integerListMap=playerStatsList.stream().collect(Collectors.groupingBy(BasketballMatchPlayerDetails::getTeamId));
-            Predicate<BasketballMatchPlayerDetails>isTeamOne=plater->plater.getTeamId().equals(playerStatsList.get(1).getTeamId());
-            Map<Boolean,List<BasketballMatchPlayerDetails>>partitionedPlayers=playerStatsList.stream().collect(Collectors.partitioningBy(isTeamOne));
-            List<BasketballMatchPlayerDetails> teamOne=partitionedPlayers.get(true);
-            List<BasketballMatchPlayerDetails> teamTow=partitionedPlayers.get(false);
-            return  new List[]{teamOne, teamTow};
+                Predicate<BasketballMatchPlayerDetails> isTeamOne = plater -> plater.getTeamId().equals(playerStatsList.get(1).getTeamId());
+                Map<Boolean, List<BasketballMatchPlayerDetails>> partitionedPlayers = playerStatsList.stream().collect(Collectors.partitioningBy(isTeamOne));
+                List<BasketballMatchPlayerDetails> teamOne = partitionedPlayers.get(true);
+                List<BasketballMatchPlayerDetails> teamTow = partitionedPlayers.get(false);
+                return new List[]{teamOne, teamTow};
 
             }
         } catch (Exception e) {
             // 异常处理
         }
-       return null;
+        return null;
     }
-    
+
     // 辅助方法：根据球员ID获取球员信息
     private BasketballPlayer getPlayerById(Long playerId) {
         // 使用QueryWrapper直接查询
         try {
-            return new com.baomidou.mybatisplus.extension.service.impl.ServiceImpl<com.baomidou.mybatisplus.core.mapper.BaseMapper<BasketballPlayer>, BasketballPlayer>(){}.getById(playerId);
+            return new com.baomidou.mybatisplus.extension.service.impl.ServiceImpl<com.baomidou.mybatisplus.core.mapper.BaseMapper<BasketballPlayer>, BasketballPlayer>() {
+            }.getById(playerId);
         } catch (Exception e) {
             // 异常处理
             return null;
@@ -199,57 +203,49 @@ public class MatchDataServiceImpl implements MatchDataService {
         if (match == null) {
             return new ArrayList<>();
         }
-        
+
         // 获取主队和客队信息
         BasketballTeam homeTeam = basketballTeamMapper.selectById(match.getHomeTeamId());
         BasketballTeam awayTeam = basketballTeamMapper.selectById(match.getAwayTeamId());
-        
+
         // 获取比赛统计数据
         QueryWrapper<BasketballTeamStats> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("match_id", matchId);
-        List<BasketballTeamStats> teamStats = new ArrayList<>(); // 使用QueryWrapper直接查询
-        try {
-            teamStats = new com.baomidou.mybatisplus.extension.service.impl.ServiceImpl<com.baomidou.mybatisplus.core.mapper.BaseMapper<BasketballTeamStats>, BasketballTeamStats>(){}.list(queryWrapper);
-        } catch (Exception e) {
-            // 异常处理
-        }
-        
+
+        List<BasketballTeamStats> teamStatsList = basketballTeamStatsMapper.selectList(queryWrapper);
+
+        // 将 teamStatsList 转换为以 teamId 为 key 的 Map，方便查找，为后续超多队伍进行铺垫
+        Map<Long, BasketballTeamStats> teamStatsMap = teamStatsList.stream()
+                .collect(Collectors.toMap(BasketballTeamStats::getTeamId, Function.identity()));
+
         List<TeamStatistics> statistics = new ArrayList<>();
-        
+
         // 添加主队统计
-        if (homeTeam != null) {
-            for (BasketballTeamStats stats : teamStats) {
-                if (stats.getTeamId().equals(homeTeam.getTeamId())) {
-                    statistics.add(new TeamStatistics(
-                            homeTeam.getTeamName(),
-                            stats.getTotalPoints(),
-                            stats.getRebounds(),
-                            stats.getAssists(),
-                            stats.getFgPercent(),
-                            stats.getThreePtPercent()
-                    ));
-                    break;
-                }
-            }
+        if (homeTeam != null && teamStatsMap.containsKey(homeTeam.getTeamId())) {
+            BasketballTeamStats stats = teamStatsMap.get(homeTeam.getTeamId());
+            statistics.add(new TeamStatistics(
+                    homeTeam.getTeamName(),
+                    stats.getTotalPoints(),
+                    stats.getRebounds(),
+                    stats.getAssists(),
+                    stats.getFgPercent(),
+                    stats.getThreePtPercent()
+            ));
         }
-        
+
         // 添加客队统计
-        if (awayTeam != null) {
-            for (BasketballTeamStats stats : teamStats) {
-                if (stats.getTeamId().equals(awayTeam.getTeamId())) {
-                    statistics.add(new TeamStatistics(
-                            awayTeam.getTeamName(),
-                            stats.getTotalPoints(),
-                            stats.getRebounds(),
-                            stats.getAssists(),
-                            stats.getFgPercent(),
-                            stats.getThreePtPercent()
-                    ));
-                    break;
-                }
-            }
+        if (awayTeam != null && teamStatsMap.containsKey(awayTeam.getTeamId())) {
+            BasketballTeamStats stats = teamStatsMap.get(awayTeam.getTeamId());
+            statistics.add(new TeamStatistics(
+                    awayTeam.getTeamName(),
+                    stats.getTotalPoints(),
+                    stats.getRebounds(),
+                    stats.getAssists(),
+                    stats.getFgPercent(),
+                    stats.getThreePtPercent()
+            ));
         }
-        
+
         return statistics;
     }
 
@@ -258,56 +254,27 @@ public class MatchDataServiceImpl implements MatchDataService {
         // 从数据库获取比赛信息
         BasketballMatch match = basketballMatchMapper.selectById(matchId);
         if (match == null) {
-            return new ShotChart(new TeamShot("", 0, 0, 0), new TeamShot("", 0, 0, 0));
+            return new ShotChart(new ShotChart.TeamShot("", 0, 0, 0), new ShotChart.TeamShot("", 0, 0, 0));
         }
-        
-        // 获取主队和客队信息
-        BasketballTeam homeTeam = basketballTeamMapper.selectById(match.getHomeTeamId());
-        BasketballTeam awayTeam = basketballTeamMapper.selectById(match.getAwayTeamId());
-        
+
+
+
         // 获取比赛统计数据
         QueryWrapper<BasketballTeamStats> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("match_id", matchId);
+
         List<BasketballTeamStats> teamStats = new ArrayList<>(); // 使用QueryWrapper直接查询
         try {
-            teamStats = new com.baomidou.mybatisplus.extension.service.impl.ServiceImpl<com.baomidou.mybatisplus.core.mapper.BaseMapper<BasketballTeamStats>, BasketballTeamStats>(){}.list(queryWrapper);
+            teamStats = basketballTeamStatsMapper.selectList(queryWrapper);
         } catch (Exception e) {
             // 异常处理
         }
-        
-        TeamShot homeShot = new TeamShot("", 0, 0, 0);
-        TeamShot awayShot = new TeamShot("", 0, 0, 0);
-        
-        // 设置主队投篮数据
-        if (homeTeam != null) {
-            for (BasketballTeamStats stats : teamStats) {
-                if (stats.getTeamId().equals(homeTeam.getTeamId())) {
-                    // 假设数据库中有投篮命中和出手次数
-                    int made = 0; // 应该从stats中获取
-                    int attempt = 0; // 应该从stats中获取
-                    double pct = stats.getFgPercent();
-                    
-                    homeShot = new TeamShot(homeTeam.getTeamName(), made, attempt, pct);
-                    break;
-                }
-            }
-        }
-        
-        // 设置客队投篮数据
-        if (awayTeam != null) {
-            for (BasketballTeamStats stats : teamStats) {
-                if (stats.getTeamId().equals(awayTeam.getTeamId())) {
-                    // 假设数据库中有投篮命中和出手次数
-                    int made = 0; // 应该从stats中获取
-                    int attempt = 0; // 应该从stats中获取
-                    double pct = stats.getFgPercent();
-                    
-                    awayShot = new TeamShot(awayTeam.getTeamName(), made, attempt, pct);
-                    break;
-                }
-            }
-        }
-        
+
+        ShotChart.TeamShot homeShot = new ShotChart.TeamShot("", 0, 0, 0);
+        ShotChart.TeamShot awayShot = new ShotChart.TeamShot("", 0, 0, 0);
+
+
+
         return new ShotChart(awayShot, homeShot);
     }
 }

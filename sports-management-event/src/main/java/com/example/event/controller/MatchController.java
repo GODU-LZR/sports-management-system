@@ -40,24 +40,24 @@ public class MatchController {
     /**
      * 接口3：球员高光
      */
-    @GetMapping("/highlights")
-    public Result<HighlightsData> getHighlights() {
-        HighlightsData data = new HighlightsData(
-                Arrays.asList(
-                        new PlayerScore("贝恩", 30),
-                        new PlayerScore("巴特勒", 38)
-                ),
-                Arrays.asList(
-                        new PlayerScore("伊迪", 17),
-                        new PlayerScore("库里", 37)
-                ),
-                Arrays.asList(
-                        new PlayerScore("小皮蓬", 10),
-                        new PlayerScore("格林", 10)
-                )
-        );
-        return Result.success(data);
-    }
+//    @GetMapping("/highlights")
+//    public Result<HighlightsData> getHighlights() {
+//        HighlightsData data = new HighlightsData(
+//                Arrays.asList(
+//                        new PlayerScore("贝恩", 30, player.getTeamId()),
+//                        new PlayerScore("巴特勒", 38, player.getTeamId())
+//                ),
+//                Arrays.asList(
+//                        new PlayerScore("伊迪", 17, player.getTeamId()),
+//                        new PlayerScore("库里", 37, player.getTeamId())
+//                ),
+//                Arrays.asList(
+//                        new PlayerScore("小皮蓬", 10, player.getTeamId()),
+//                        new PlayerScore("格林", 10, player.getTeamId())
+//                )
+//        );
+//        return Result.success(data);
+//    }
 
     /**
      * 接口4：全队综合统计
@@ -77,8 +77,8 @@ public class MatchController {
     @GetMapping("/shot-chart")
     public Result<ShotChart> getShotChart() {
         ShotChart data = new ShotChart(
-                new TeamShot("Grizzlies", 42, 86, 48.8),
-                new TeamShot("Warriors",  39, 85, 45.9)
+                new ShotChart.TeamShot("Grizzlies", 42, 86, 48.8),
+                new ShotChart.TeamShot("Warriors",  39, 85, 45.9)
         );
         return Result.success(data);
     }
