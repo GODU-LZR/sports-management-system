@@ -23,7 +23,8 @@ public interface CategoryMapper {
             "(#{categoryId},#{name},#{description},#{value},#{total},#{stock},#{createTime},#{modifiedTime},#{createId},#{modifiedId})")
     void addCategory(EquipmentCategory category);
 
-
+    @Update("update equipment_category set total = total+1 where category_id = #{categoryId}")
+    void AddTotal(Long categoryId);
 
     @Select("select * from equipment_category")
     List<CategoryVO> selectAll();
@@ -40,4 +41,16 @@ public interface CategoryMapper {
             "modified_time = #{modifiedTime}" +
             " where category_id = #{categoryId}")
     void update(EquipmentCategory equipmentCategory);
+
+    /**
+     * 通过器材Id 从器材表里 查询对应的器材分类Id 再对库存操作数量
+     * @param equipmentId
+     */
+    @Update("update equipment_category ec set ec.stock = stock -1 where ec.category_id = (select category_id from equipment where equipment_id = #{equipmentId})")
+    void BorrowEqp(Long equipmentId);
+
+
+
+    @Update("update equipment_category ec set ec.stock = stock +1 where ec.category_id = (select  category_id from equipment where equipment_id = #{equipmentId})")
+    void ReturnEqp(Long equipmentId);
 }

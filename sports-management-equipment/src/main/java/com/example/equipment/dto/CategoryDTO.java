@@ -22,5 +22,4 @@ public class CategoryDTO {
 
     private  Integer stock;    //库存
 
-
 }
