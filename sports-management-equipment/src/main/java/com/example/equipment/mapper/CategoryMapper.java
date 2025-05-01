@@ -23,7 +23,7 @@ public interface CategoryMapper {
             "(#{categoryId},#{name},#{description},#{value},#{total},#{stock},#{createTime},#{modifiedTime},#{createId},#{modifiedId})")
     void addCategory(EquipmentCategory category);
 
-    @Update("update equipment_category set total = total+1 where category_id = #{categoryId}")
+    @Update("update equipment_category set total = total+1 , stock = stock +1 where category_id = #{categoryId}")
     void AddTotal(Long categoryId);
 
     @Select("select * from equipment_category")
