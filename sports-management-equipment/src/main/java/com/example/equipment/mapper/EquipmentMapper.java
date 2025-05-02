@@ -1,15 +1,19 @@
 package com.example.equipment.mapper;
 
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.common.constant.UserConstant;
 import com.example.equipment.pojo.Equipment;
+import com.example.equipment.vo.EquipmentVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 @Mapper
-public interface EquipmentMapper {
+public interface EquipmentMapper extends BaseMapper<EquipmentVO> {
 
     /*
     新增一个器材
@@ -49,4 +53,7 @@ public interface EquipmentMapper {
 
     @Select("select status from equipment where equipment_id = #{equipmentId}")
     Integer ReturnStatus(Long equipmentId);
+
+
+//    IPage<EquipmentVO> selectPage(Page page, Object o);
 }

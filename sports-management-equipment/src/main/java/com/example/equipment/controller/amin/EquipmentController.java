@@ -1,9 +1,11 @@
 package com.example.equipment.controller.amin;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.common.constant.UserConstant;
 import com.example.common.response.Result;
 import com.example.equipment.dto.EquipmentDTO;
+import com.example.equipment.dto.utilDTO.EquipmentPageQuery;
 import com.example.equipment.service.impl.EquipmentServiceImpl;
 import com.example.equipment.vo.EquipmentVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +32,7 @@ public class EquipmentController {
      */
     @PostMapping("/addEquipment")
     @Operation(summary = "添加器材")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+//    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public Result addEquipment(@RequestBody EquipmentDTO equipmentDTO,@Parameter(hidden = true) UserConstant currentUser)
     {
         log.info("前端接收到的器材数据为:{}",equipmentDTO);
@@ -45,12 +47,20 @@ public class EquipmentController {
      * @return
      */
     @GetMapping("/getEquipment")
-    public Result  getEquipment( @RequestParam(defaultValue = "1") Integer pageNum,
-                                 @RequestParam(defaultValue = "10") Integer pageSize)
+    public Result<IPage<EquipmentVO>> getUsers(EquipmentPageQuery query)
     {
 
+            // 将 DTO 直接传递给 Service 层
+            IPage<EquipmentVO> pageResult = equipmentService.PageSelect(query);
+            // 使用你的 Result 类封装成功结果
+            return Result.success(pageResult);
 
-        return Result.success();
+            // 捕获异常，并使用你的 GlobalExceptionHandler 或手动记录日志
+            // 返回失败的 Result
+            // 这里的错误信息可以更友好，或者使用枚举状态码
+            // 例如：return Result.error(ResultCodeEnum.SYSTEM_ERROR);
+//            return Result.error("Failed");
+
     }
 
 
