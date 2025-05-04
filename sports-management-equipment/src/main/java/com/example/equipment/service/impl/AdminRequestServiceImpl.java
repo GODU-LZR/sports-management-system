@@ -88,6 +88,7 @@ public class AdminRequestServiceImpl implements AdminRequestService {
 
             for(RequestVO request :list3)
             {
+                log.info("归还的器材ID为:{}",request.getEquipmentId());
                 //对该器材的状态进行更新
                 equipmentMapper.setEquipment_Status_To_1(request.getEquipmentId());
 
