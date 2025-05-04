@@ -55,12 +55,6 @@ public class EquipmentController {
             // 使用你的 Result 类封装成功结果
             return Result.success(pageResult);
 
-            // 捕获异常，并使用你的 GlobalExceptionHandler 或手动记录日志
-            // 返回失败的 Result
-            // 这里的错误信息可以更友好，或者使用枚举状态码
-            // 例如：return Result.error(ResultCodeEnum.SYSTEM_ERROR);
-//            return Result.error("Failed");
-
     }
 
 

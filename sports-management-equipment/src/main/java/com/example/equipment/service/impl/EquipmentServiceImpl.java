@@ -3,6 +3,7 @@ package com.example.equipment.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.common.constant.UserConstant;
 import com.example.common.response.Result;
 import com.example.common.utils.SnowflakeIdGenerator;
@@ -26,7 +27,7 @@ import static java.lang.Math.random;
 
 @Service
 @Slf4j
-public class EquipmentServiceImpl implements EquipmentService {
+public class EquipmentServiceImpl  extends ServiceImpl<EquipmentMapper, Equipment> implements EquipmentService {
 
     @Autowired
     private EquipmentMapper equipmentMapper;
@@ -99,42 +100,29 @@ public class EquipmentServiceImpl implements EquipmentService {
 
     }
 
+    /**
+     * 分页查询器材列表 (返回 EquipmentVO)
+     * 直接调用 Mapper 中自定义的 selectEquipmentVOPage 方法
+     * @param query 查询条件和分页信息
+     * @return 分页结果 IPage<EquipmentVO>
+     */
     @Override
     public IPage<EquipmentVO> PageSelect(EquipmentPageQuery query) {
 
         // 1. 创建分页对象
+        // MyBatis-Plus 会根据这个对象中的 current 和 size 进行分页
+        // 泛型参数 EquipmentVO 匹配了 Mapper 方法的返回类型 IPage<EquipmentVO>
         IPage<EquipmentVO> page = new Page<>(query.getPageNum(), query.getPageSize());
 
-        // 2. 创建查询 Wrapper
-        // 使用 LambdaQueryWrapper 更安全，避免写错字段名字符串
-        LambdaQueryWrapper<EquipmentVO> queryWrapper = new LambdaQueryWrapper<>();
+        // 2. 直接调用 EquipmentMapper 中自定义的 selectEquipmentVOPage 方法
+        // 这个方法已经在 Mapper XML 或 @SelectProvider 中写好了 JOIN 和 WHERE 条件逻辑
+        // 它接收 IPage<EquipmentVO> 和 EquipmentPageQuery DTO
+        // Mapper 方法会负责根据 query DTO 中的条件（如 specification）构建 WHERE 子句
+        log.info("Service层执行分页查询，查询条件:{}", query);
+        IPage<EquipmentVO> resultPage = equipmentMapper.selectEquipmentVOPage(page, query);
 
-        // 3. 添加模糊查询条件
-        // 判断查询关键字是否不为空，如果不为空则添加 LIKE 条件
-        if (StringUtils.hasText(query.getSpecification())) {
-            // EquipmentVO::getName 是通过方法引用指定要查询的字段
-            // query.getName() 是查询的值
-            // like() 方法会自动在值两端加上 '%'，生成 SQL 类似 WHERE name LIKE '%keyword%'
-            queryWrapper.like(EquipmentVO::getSpecification, query.getSpecification());
-        }
-
-        // 如果有其他模糊查询字段，可以类似添加，例如：
-        // if (StringUtils.hasText(query.getType())) {
-        //     // 如果希望是 OR 关系，可以使用 .or()
-        //     queryWrapper.or().like(EquipmentVO::getType, query.getType());
-        // }
-        // 如果希望是 AND 关系，直接继续添加 like() 即可
-        // if (StringUtils.hasText(query.getLocation())) {
-        //     queryWrapper.like(EquipmentVO::getLocation, query.getLocation());
-        // }
-
-
-        // 4. 执行分页查询，将分页对象和 Wrapper 对象都传进去
-        IPage<EquipmentVO> resultPage = equipmentMapper.selectPage(page, queryWrapper);
-
+        log.info("Service层分页查询结果:{}", resultPage.getRecords().size()); // 记录查询到的条数
         return resultPage;
     }
-
-
 
 }
