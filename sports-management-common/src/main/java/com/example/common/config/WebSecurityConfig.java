@@ -51,15 +51,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // 允许跨域预检请求及部分公开接口
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers(
-                        "/swagger-ui.html",
-                        "/swagger-ui/**",
-                        "/v3/api-docs/**",
-                        "/api/**/v3/api-docs/**",
-                        "/swagger-resources/**",
-                        "/webjars/**",
-                        "/**/v3/api-docs/**",
-                        "/register",
-                        "/login"
+                        "/**"
+//                        "/swagger-ui.html",
+//                        "/swagger-ui/**",
+//                        "/v3/api-docs/**",
+//                        "/api/**/v3/api-docs/**",
+//                        "/swagger-resources/**",
+//                        "/webjars/**",
+//                        "/**/v3/api-docs/**",
+//                        "/register",
+//                        "/login"
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and()

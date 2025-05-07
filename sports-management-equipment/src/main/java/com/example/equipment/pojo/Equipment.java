@@ -4,24 +4,30 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Equipment {
 
-    private Long equipmentId;
+    private Long equipmentId;  //一个器材对应的ID
 
-    private String equipmentName;
+    private  Long categoryId; //一个器材对应的种类
 
-    private String pictureUrl;
+    private String pictureUrl;  //器材的图片
 
-    private Integer value;
+    private String specification;  //器材的规格描述
 
-    private Integer total;
+    private Integer status;    //器材所属的状态  1: 可用。2: 维修中。3: 报废
 
-    private Integer stock;
+    private LocalDateTime createTime;
 
-    private Integer isSale;
+    private LocalDateTime modifiedTime;
 
-    private Integer isDeleted;
+    private Integer isDeleted;  //是否删除
+
+    private Long createId;
+
+    private Long modifiedId;
 }

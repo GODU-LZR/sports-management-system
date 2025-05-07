@@ -12,17 +12,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class EquipmentCategory {
 
-    private Long categoryId;
+    private Long categoryId;  //器材分类ID
 
-    private  String name;
+    private  String name;  //类别名称
 
-    private String description;
+    private String description;  //分类描述
 
-    private float value;
+    private float value;   //该类器材的借用 价格  1小时
 
-    private  Integer total;
+    private  Integer total;    //总数
 
-    private  Integer stock;
+    private  Integer stock;    //库存
 
     private LocalDateTime createTime;
 

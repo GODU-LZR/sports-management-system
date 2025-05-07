@@ -1,11 +1,15 @@
 package com.example.equipment.controller.amin;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.example.common.constant.UserConstant;
 import com.example.common.response.Result;
 import com.example.equipment.dto.EquipmentDTO;
+import com.example.equipment.dto.utilDTO.EquipmentPageQuery;
 import com.example.equipment.service.impl.EquipmentServiceImpl;
 import com.example.equipment.vo.EquipmentVO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,12 +32,12 @@ public class EquipmentController {
      */
     @PostMapping("/addEquipment")
     @Operation(summary = "添加器材")
-    @PreAuthorize("hasRole('ADMIN')")
-    public Result addEquipment(@RequestBody EquipmentDTO equipmentDTO)
+//    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public Result addEquipment(@RequestBody EquipmentDTO equipmentDTO,@Parameter(hidden = true) UserConstant currentUser)
     {
         log.info("前端接收到的器材数据为:{}",equipmentDTO);
 
-        equipmentService.addEquipment(equipmentDTO);
+        equipmentService.addEquipment(equipmentDTO,currentUser);
 
         return Result.success();
     }
@@ -43,12 +47,14 @@ public class EquipmentController {
      * @return
      */
     @GetMapping("/getEquipment")
-    public Result  getEquipment( @RequestParam(defaultValue = "1") Integer pageNum,
-                                 @RequestParam(defaultValue = "10") Integer pageSize)
+    public Result<IPage<EquipmentVO>> getUsers(EquipmentPageQuery query)
     {
 
+            // 将 DTO 直接传递给 Service 层
+            IPage<EquipmentVO> pageResult = equipmentService.PageSelect(query);
+            // 使用你的 Result 类封装成功结果
+            return Result.success(pageResult);
 
-        return Result.success();
     }
 
 
@@ -57,11 +63,12 @@ public class EquipmentController {
      * @param equipmentDTO
      * @return
      */
-    public Result updateEquipment(@RequestBody EquipmentDTO equipmentDTO)
+    @PutMapping("/updateEquipment")
+    public Result updateEquipment(@RequestBody EquipmentDTO equipmentDTO,@Parameter(hidden = true) UserConstant currentUser)
     {
         log.info("修改器材的信息为:{}",equipmentDTO);
 
-        equipmentService.updateEquipment(equipmentDTO);
+        equipmentService.updateEquipment(equipmentDTO,currentUser);
 
         return Result.success();
     }
@@ -69,13 +76,13 @@ public class EquipmentController {
 
     /**
      * 根据器材id删除
-     * @param EquipmentId
+     * @param equipmentid
      * @return
      */
     @DeleteMapping("/deleteEquipment")
-    public Result deleteEquipment(@PathVariable Long EquipmentId){
+    public Result deleteEquipment(@PathVariable Long equipmentid,@Parameter(hidden = true) UserConstant currentUser){
 
-        equipmentService.deleteEquipment(EquipmentId);
+        equipmentService.deleteEquipment(equipmentid,currentUser);
 
         return Result.success();
     }
