@@ -9,11 +9,13 @@ import lombok.Data;
  */
 @Data
 public class PlayerScore {
+    public Integer teamId;
     public String name;  // 球员姓名
     public int score;    // 得分值
 
-    public PlayerScore(String name, int score) {
+    public PlayerScore(String name, int score, Integer teamId) {
         this.name = name;
         this.score = score;
+        this.teamId=teamId;
     }
 }

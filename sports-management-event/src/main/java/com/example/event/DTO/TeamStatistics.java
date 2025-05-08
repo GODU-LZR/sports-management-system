@@ -1,5 +1,9 @@
 package com.example.event.DTO;
 
+import com.example.event.dao.basketball.BasketballMatchPlayerDetails;
+
+import java.util.List;
+
 /**
  * 单队综合统计数据
  */
@@ -19,4 +23,5 @@ public class TeamStatistics {
         this.fgPct = fgPct;
         this.tpPct = tpPct;
     }
+
 }

@@ -45,7 +45,7 @@ public class MatchDataController {
     /**
      * 接口4：全队综合统计
      */
-    @GetMapping("/team-stats")
+    @GetMapping("/teamstats")
     public Result<List<TeamStatistics>> getTeamStats(@PathVariable("matchId") String matchId) {
         return Result.success(matchDataService.getTeamStats(matchId));
     }
@@ -53,7 +53,7 @@ public class MatchDataController {
     /**
      * 接口5：投篮热图数据（这里只返回命中/打铁的总数和百分比）
      */
-    @GetMapping("/shot-chart")
+    @GetMapping("/shotchart")
     public Result<ShotChart> getShotChart(@PathVariable("matchId") String matchId) {
         return Result.success(matchDataService.getShotChart(matchId));
     }

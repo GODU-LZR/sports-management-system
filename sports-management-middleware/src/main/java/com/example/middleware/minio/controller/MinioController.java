@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "文件服务", description = "文件上传、查看相关接口")
 public class MinioController {
 
-    @DubboReference(version = "1.0.0", check = false)
+    @DubboReference(version = "1.0.0", check = false,retries =0)
     private IFileService fileService;
 
     // 已有方法

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.event.mapper.basketball.BasketballTeamStatsMapper">
+
+    <!-- 字段映射（如果字段名与列名不一致时使用） -->
+    <resultMap id="BaseResultMap" type="com.example.event.dao.basketball.BasketballTeamStats">
+        <id column="match_id" property="matchId" />
+        <id column="team_id" property="teamId" />
+        <result column="total_points" property="totalPoints"/>
+        <result column="rebounds" property="rebounds"/>
+        <result column="assists" property="assists"/>
+        <result column="fg_percent" property="fgPercent"/>
+        <result column="three_pt_percent" property="threePtPercent"/>
+    </resultMap>
+
+    <!-- 根据复合主键查询 -->
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT * FROM event_basketball_team_statistics
+        WHERE match_id = #{matchId} AND team_id = #{teamId}
+    </select>
+
+    <!-- 插入数据 -->
+    <insert id="insert">
+        INSERT INTO event_basketball_team_statistics (
+            match_id, team_id, total_points, rebounds,
+            assists, fg_percent, three_pt_percent
+        ) VALUES (
+            #{matchId}, #{teamId}, #{totalPoints}, #{rebounds},
+            #{assists}, #{fgPercent}, #{threePtPercent}
+        )
+    </insert>
+
+    <!-- 更新数据 -->
+    <update id="updateByPrimaryKey">
+        UPDATE event_basketball_team_statistics
+        SET
+            total_points = #{totalPoints},
+            rebounds = #{rebounds},
+            assists = #{assists},
+            fg_percent = #{fgPercent},
+            three_pt_percent = #{threePtPercent}
+        WHERE match_id = #{matchId} AND team_id = #{teamId}
+    </update>
+
+    <!-- 删除数据 -->
+    <delete id="deleteByPrimaryKey">
+        DELETE FROM event_basketball_team_statistics
+        WHERE match_id = #{matchId} AND team_id = #{teamId}
+    </delete>
+    
+    <!-- 获取比赛统计数据 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT * FROM event_basketball_team_statistics
+        <if test="ew != null">
+            ${ew.customSqlSegment}
+        </if>
+    </select>
+</mapper>
