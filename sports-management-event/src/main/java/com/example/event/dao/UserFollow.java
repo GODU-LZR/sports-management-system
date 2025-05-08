@@ -1,4 +1,4 @@
-package com.example.entity;
+package com.example.event.dao;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
