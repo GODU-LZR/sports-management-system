@@ -148,6 +148,12 @@
             <artifactId>fastexcel</artifactId>
             <version>1.1.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-sdk-java</artifactId>
+            <version>4.40.186.ALL</version>
+        </dependency>
+
     </dependencies>
 
 </project>
