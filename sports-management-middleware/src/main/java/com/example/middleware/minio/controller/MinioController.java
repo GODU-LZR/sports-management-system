@@ -75,7 +75,7 @@ public class MinioController {
         return Result.success(result);
     }
     
-    @GetMapping("/upload/uncycle/full/{bucketName}//{fileName}")
+    @GetMapping("/upload/uncycle/full/{bucketName}/{fileName}")
     @Operation(summary = "完整非循环上传URL", description = "指定存储桶、用户ID和文件名获取非循环上传URL")
     public Result getFullUncycleUploadUrl(
             @PathVariable("bucketName") String bucketName,
