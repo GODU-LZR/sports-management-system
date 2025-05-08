@@ -1,4 +1,4 @@
-package com.example.event.DTO;
+package com.example.event.DTO.basketball.matchdata;
 
 /**
  * 单队分节得分

@@ -1,8 +1,4 @@
-package com.example.event.DTO;
-
-import com.example.event.dao.basketball.BasketballMatchPlayerDetails;
-
-import java.util.List;
+package com.example.event.DTO.basketball.matchdata;
 
 /**
  * 单队综合统计数据

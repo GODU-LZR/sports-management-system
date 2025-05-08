@@ -1,11 +1,10 @@
-package com.example.event.DTO;
+package com.example.event.DTO.basketball.matchdata;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * 球员高光数据分组

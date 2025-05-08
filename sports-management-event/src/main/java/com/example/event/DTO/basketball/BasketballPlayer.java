@@ -1,4 +1,4 @@
-package com.example.event.entity;
+package com.example.event.DTO.basketball;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

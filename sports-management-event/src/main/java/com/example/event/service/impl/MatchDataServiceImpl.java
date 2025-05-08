@@ -1,9 +1,9 @@
 package com.example.event.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.event.DTO.*;
+import com.example.event.DTO.basketball.matchdata.*;
 import com.example.event.dao.basketball.*;
-import com.example.event.entity.BasketballPlayer;
+import com.example.event.DTO.basketball.BasketballPlayer;
 import com.example.event.mapper.basketball.*;
 import com.example.event.service.MatchDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -255,7 +255,7 @@ public class MatchDataServiceImpl implements MatchDataService {
 
         ShotChart teamStats = basketballShotChartMapper.selectShotChart(matchId);
         teamStats.setMatchId(matchId);
-        System.out.println("tttt: " + teamStats.getMatchId());
+        System.out.println(teamStats.getMatchId());
 
         if (teamStats == null) {
             throw new RuntimeException();

@@ -1,4 +1,4 @@
-package com.example.event.DTO;
+package com.example.event.DTO.basketball.matchdata;
 
 import lombok.Data;
 
@@ -12,10 +12,17 @@ public class PlayerScore {
     public Integer teamId;
     public String name;  // 球员姓名
     public int score;    // 得分值
+    public String avater_url;
 
     public PlayerScore(String name, int score, Integer teamId) {
         this.name = name;
         this.score = score;
         this.teamId=teamId;
+    }
+    public PlayerScore(String name, int score, Integer teamId,String avater_url) {
+        this.name = name;
+        this.score = score;
+        this.teamId=teamId;
+        this.avater_url=avater_url;
     }
 }

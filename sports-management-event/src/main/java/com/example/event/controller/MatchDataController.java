@@ -1,7 +1,7 @@
 package com.example.event.controller;
 
-import com.example.event.DTO.*;
 import com.example.common.response.Result;
+import com.example.event.DTO.basketball.matchdata.*;
 import com.example.event.service.MatchDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -14,13 +14,5 @@ public interface BasketballMatchQuarterMapper extends BaseMapper<BasketballMatch
     })
     List<BasketballMatchQuarter> selectByMatchId(@Param("matchId") String matchId);
 
-    // 批量更新（自定义SQL）
-    @Update("<script>" +
-            "UPDATE event_match_quarters SET " +
-            "<foreach collection='list' item='item' separator=','>" +
-            "q1=#{item.q1}, q2=#{item.q2}, q3=#{item.q3}, q4=#{item.q4} " +
-            "WHERE match_id=#{item.id.matchId} AND team_id=#{item.id.teamId}" +
-            "</foreach>" +
-            "</script>")
-    int batchUpdateQuarters(@Param("list") List<BasketballMatchQuarter> quarters);
+
 }

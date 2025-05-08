@@ -1,6 +1,7 @@
 package com.example.event.service;
 
-import com.example.event.DTO.*;
+import com.example.event.DTO.basketball.matchdata.*;
+
 import java.util.List;
 
 /**

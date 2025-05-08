@@ -25,16 +25,16 @@
             emb.match_id = #{match_id};
     </select>
 
-    <resultMap id="shotChartResultMap" type="com.example.event.DTO.ShotChart">
+    <resultMap id="shotChartResultMap" type="com.example.event.DTO.basketball.matchdata.ShotChart">
         <result property="hometeamId" column="home_team_id" jdbcType="BIGINT" />
         <result property="awayteamId" column="away_team_id" jdbcType="BIGINT" />
-        <association property="home" javaType="com.example.event.DTO.ShotChart$TeamShot">
+        <association property="home" javaType="com.example.event.DTO.basketball.matchdata.ShotChart$TeamShot">
             <result property="team" column="home_team_id" jdbcType="BIGINT" />
             <result property="made" column="home_made" jdbcType="INTEGER" />
             <result property="attempt" column="home_attempt" jdbcType="INTEGER" />
             <result property="pct" column="home_pct" jdbcType="DOUBLE" />
         </association>
-        <association property="away" javaType="com.example.event.DTO.ShotChart$TeamShot">
+        <association property="away" javaType="com.example.event.DTO.basketball.matchdata.ShotChart$TeamShot">
             <result property="team" column="away_team_id" jdbcType="BIGINT" />
             <result property="made" column="away_made" jdbcType="INTEGER" />
             <result property="attempt" column="away_attempt" jdbcType="INTEGER" />
