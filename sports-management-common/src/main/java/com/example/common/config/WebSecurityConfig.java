@@ -47,20 +47,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
+                // 禁用默认登出
+                .logout().disable()
                 .authorizeRequests()
                 // 允许跨域预检请求及部分公开接口
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers(
-                        "/**"
-//                        "/swagger-ui.html",
-//                        "/swagger-ui/**",
-//                        "/v3/api-docs/**",
-//                        "/api/**/v3/api-docs/**",
-//                        "/swagger-resources/**",
-//                        "/webjars/**",
-//                        "/**/v3/api-docs/**",
-//                        "/register",
-//                        "/login"
+                        "/sendVerificationCode",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/api/**/v3/api-docs/**",
+                        "/swagger-resources/**",
+                        "/webjars/**",
+                        "/**/v3/api-docs/**",
+                        "/register",
+                        "/login"
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and()

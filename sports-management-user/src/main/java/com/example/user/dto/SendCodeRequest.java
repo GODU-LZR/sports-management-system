@@ -1,4 +1,4 @@
-package com.example.middleware.notification.dto;
+package com.example.user.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

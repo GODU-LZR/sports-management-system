@@ -8,5 +8,6 @@ import com.example.user.dto.RegistrationRequest;
 public interface AuthService {
     Result<LoginResponse> register(RegistrationRequest registrationRequest);
     Result<LoginResponse> login(LoginRequest loginRequest);
-    Result<Void> logout(String token);
+    Result<Void> logout(Long userId);
+    Result<Boolean> sendVerificationEmail(String email);
 }
