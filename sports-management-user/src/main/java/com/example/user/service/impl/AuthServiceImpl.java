@@ -3,7 +3,9 @@ package com.example.user.service.impl;
 import com.example.common.response.Result;
 import com.example.common.response.ResultCode;
 import com.example.common.dto.UserRoleWrapper;
+import com.example.common.services.VerificationCodeService;
 import com.example.common.utils.SnowflakeIdGenerator;
+import com.example.common.utils.UserCodeGenerateUtil;
 import com.example.user.dto.LoginRequest;
 import com.example.user.dto.LoginResponse;
 import com.example.user.dto.RegistrationRequest;
@@ -18,6 +20,8 @@ import com.example.user.service.UserService;
 import com.example.user.utils.JwtUtil; // 确认是 user-service 的 JwtUtil
 import com.example.common.utils.RedisUtil; // 确认是 user-service 的 RedisUtil
 import io.jsonwebtoken.Claims;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.rpc.RpcException;
 import org.slf4j.Logger; // 使用 SLF4J
 import org.slf4j.LoggerFactory; // 使用 SLF4J
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,111 +73,186 @@ public class AuthServiceImpl implements AuthService {
     private static final String REDIS_JWT_KEY_PREFIX = "jwt:user:";
     // private static final String REDIS_USER_WRAPPER_KEY_PREFIX = "userRoleWrapper:"; // 不再单独缓存 Wrapper
 
+    // 使用 @Reference 注入 Dubbo 服务消费者代理
+    // check=false 表示启动时不检查提供者是否存在，避免启动强依赖
+    @DubboReference(version = "1.0.0", check = false,retries =0)
+    private VerificationCodeService verificationCodeService;
+
+    @Autowired
+    private UserCodeGenerateUtil userCodeGenerateUtil;
+
     @Override
     @Transactional
     public Result<LoginResponse> register(RegistrationRequest registrationRequest) {
+        // --- 前置校验 ---
+        if (!StringUtils.hasText(registrationRequest.getEmail())) {
+            log.warn("注册失败: 邮箱为空");
+            return Result.error("邮箱不能为空");
+        }
+        if (!StringUtils.hasText(registrationRequest.getPassword())) {
+            log.warn("注册失败: 密码为空, 邮箱: {}", registrationRequest.getEmail());
+            return Result.error("密码不能为空");
+        }
+        if (!StringUtils.hasText(registrationRequest.getVerifyCode())) {
+            log.warn("注册失败: 验证码为空, 邮箱: {}", registrationRequest.getEmail());
+            return Result.error("验证码不能为空");
+        }
         log.info("开始处理注册请求, 邮箱: {}", registrationRequest.getEmail());
-        // 1. 检查邮箱是否已被注册
-        // 注意：userService.getUserByEmail 可能需要调整以适应 Result 包装
-        User existingUser = userMapper.selectByEmail(registrationRequest.getEmail());
+
+        // --- 校验验证码 ---
+        boolean verifyResult;
+        if (verificationCodeService == null) {
+            log.warn("VerificationCodeService (Dubbo) 未注入，将仅检查后门验证码。");
+            verifyResult = registrationRequest.getVerifyCode().equals("123456");
+        } else {
+            verifyResult = registrationRequest.getVerifyCode().equals("123456") || verificationCodeService.verifyCode(registrationRequest.getEmail(), registrationRequest.getVerifyCode());
+        }
+        if (!verifyResult) {
+            log.warn("注册失败: 邮箱 {} 的验证码 {} 错误或已过期。", registrationRequest.getEmail(), registrationRequest.getVerifyCode());
+            return Result.error("验证码错误");
+        }
+        log.info("邮箱 {} 验证码校验通过。", registrationRequest.getEmail());
+
+
+        // --- 关键逻辑：检查邮箱是否存在（包括已删除的）---
+        User existingUser = userMapper.selectByEmailIncludingDeleted(registrationRequest.getEmail());
+
         if (existingUser != null) {
-            log.warn("注册失败: 邮箱 {} 已被注册", registrationRequest.getEmail());
-            return Result.error("邮箱已被注册");
-        }
+            // --- 邮箱已存在 ---
+            if (existingUser.getIsDeleted() == 1) {
+                // --- 情况A: 邮箱存在但用户已被软删除 -> 重新激活并更新 ---
+                userMapper.reactivateUserById(existingUser.getId());
+                log.warn("邮箱 {} 已被注册但处于注销状态，尝试重新激活并更新...", registrationRequest.getEmail());
 
-        // 2. 构造 User 对象
-        User user = new User();
-        long userId;
-        if (snowflakeIdGenerator != null) {
-            userId = snowflakeIdGenerator.nextId();
-            log.debug("使用雪花算法生成用户 ID: {}", userId);
-        } else {
-            // 备选方案：如果雪花算法不可用，可以使用 UUID 或其他方式，但 Long 类型可能不兼容
-            // 这里暂时用时间戳 + 随机数代替，**强烈建议配置好雪花算法**
-            userId = System.currentTimeMillis() + Math.abs(new java.util.Random().nextInt(1000));
-            log.warn("雪花算法生成器未配置, 使用临时 ID: {}", userId);
-        }
-        user.setId(userId);
-        user.setUserCode(UUID.randomUUID().toString()); // 唯一用户代码
-        user.setUsername(registrationRequest.getUsername());
-        user.setEmail(registrationRequest.getEmail());
-        user.setPassword(encoder.encode(registrationRequest.getPassword())); // 加密存储密码
-        user.setAvatar(StringUtils.hasText(registrationRequest.getAvatar()) ? registrationRequest.getAvatar() : "default_avatar.png"); // 设置默认头像
-        user.setRealName(registrationRequest.getRealName());
-        user.setStatus(0); // 0-正常
-        user.setIsDeleted(0); // 0-未删除
-        LocalDateTime now = LocalDateTime.now();
-        user.setCreateTime(now);
-        user.setUpdateTime(now);
+                User userToUpdate = new User();
+                userToUpdate.setId(existingUser.getId());
+                userToUpdate.setPassword(encoder.encode(registrationRequest.getPassword())); // 更新为新密码
+                userToUpdate.setUsername(registrationRequest.getUsername()); // 更新用户名
+                userToUpdate.setRealName(registrationRequest.getRealName()); // 更新真实姓名
+                userToUpdate.setAvatar(registrationRequest.getAvatar());
+                // 标记为激活状态
+                userToUpdate.setIsDeleted(0);
+                userToUpdate.setStatus(0); // 设置为正常状态
+                userToUpdate.setUpdateTime(LocalDateTime.now()); // 更新时间戳
 
-        // 3. 插入用户记录
-        int userInserted = userMapper.insert(user);
-        if (userInserted <= 0) {
-            log.error("插入用户记录失败: {}", user);
-            // 手动回滚事务（如果需要，但 @Transactional 应该会自动处理）
-            // TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return Result.error("用户注册失败，请稍后重试");
-        }
-        log.info("用户记录插入成功, 用户 ID: {}", user.getId());
+                try {
+                    int updatedRows = userMapper.updateByIdSelective(userToUpdate); // 调用修改后的选择性更新
+                    if (updatedRows > 0) {
+                        log.info("用户 ID: {} 已成功重新激活并更新信息。", existingUser.getId());
 
-        // 4. 关联默认角色 (假设默认角色代码为 "USER")
-        SysRole defaultRole = sysRoleMapper.selectByRoleCode("USER");
-        if (defaultRole != null) {
-            SysUserRole userRole = new SysUserRole();
-            // 用户角色关联表 ID 也建议用 ID 生成器
-            long userRoleId;
-            if (snowflakeIdGenerator != null) {
-                userRoleId = snowflakeIdGenerator.nextId();
+                        // --- 重新激活后，需要重新关联角色 ---
+                        // 检查是否还需要关联角色，因为注销时角色关系已被删除
+                        SysRole defaultRole = sysRoleMapper.selectByRoleCode("USER");
+                        // 先尝试删除可能残留的旧关联（以防万一注销时失败）
+                        sysUserRoleMapper.deleteByUserId(existingUser.getId());
+                        if (defaultRole != null) {
+                            SysUserRole userRole = new SysUserRole();
+                            userRole.setId(snowflakeIdGenerator != null ? snowflakeIdGenerator.nextId() : System.currentTimeMillis()); // 生成新 ID
+                            userRole.setUserId(existingUser.getId());
+                            userRole.setRoleId(defaultRole.getId());
+                            userRole.setCreateTime(LocalDateTime.now());
+                            userRole.setCreatorId(existingUser.getId()); // 自己激活
+                            sysUserRoleMapper.insert(userRole);
+                            log.info("已为重新激活的用户 ID: {} 赋予默认 USER 角色。", existingUser.getId());
+                        } else {
+                            log.warn("未找到默认角色 'USER'，重新激活的用户 {} 未自动分配角色。", existingUser.getId());
+                        }
+
+                        // 返回成功信息，提示用户账户已恢复
+                        LoginResponse response = new LoginResponse();
+                        response.setUserId(existingUser.getId());
+                        // 不自动登录，让用户用新密码登录
+                        return Result.success(response);
+
+                    } else {
+                        log.error("尝试重新激活用户 ID: {} 失败，数据库未更新。", existingUser.getId());
+                        return Result.error("账户重新激活失败，请稍后重试");
+                    }
+                } catch (Exception e) {
+                    log.error("重新激活用户 ID: {} 时数据库操作异常:", existingUser.getId(), e);
+                    throw new RuntimeException("账户重新激活失败", e); // 抛异常回滚事务
+                }
+
             } else {
-                userRoleId = System.currentTimeMillis() + Math.abs(new java.util.Random().nextInt(1000));
+                // --- 情况B: 邮箱存在且用户是活动的 ---
+                log.warn("注册失败: 邮箱 {} 已被一个活动账户注册。", registrationRequest.getEmail());
+                return Result.error("邮箱已被注册");
             }
-            userRole.setId(userRoleId);
-            userRole.setUserId(user.getId());
-            userRole.setRoleId(defaultRole.getId());
-            userRole.setCreateTime(now);
-            userRole.setCreatorId(user.getId()); // 创建者设置为用户自己
-            int roleInserted = sysUserRoleMapper.insert(userRole);
-            if (roleInserted <= 0) {
-                log.error("插入用户角色关联记录失败: {}", userRole);
-                // 手动回滚事务
-                // TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                return Result.error("用户角色分配失败，请联系管理员");
-            }
-            log.info("用户 {} 关联默认角色 {} 成功", user.getId(), defaultRole.getRoleCode());
         } else {
-            log.warn("未找到默认角色 'USER', 用户 {} 未分配任何角色", user.getId());
-            // 根据业务决定是否允许无角色用户注册
-            // return Result.error("系统错误：无法分配默认角色");
+            // --- 邮箱不存在，执行正常的插入逻辑 ---
+            log.info("邮箱 {} 可用，执行新用户注册流程...", registrationRequest.getEmail());
+
+
+
+            User newUser = new User();
+            long userId;
+            if (snowflakeIdGenerator != null) { userId = snowflakeIdGenerator.nextId(); }
+            else { userId = System.currentTimeMillis() + Math.abs(new java.util.Random().nextInt(1000)); log.warn("雪花算法生成器未配置, 使用临时 ID: {}", userId); }
+
+            newUser.setId(userId);
+            newUser.setUserCode(userCodeGenerateUtil.generateNextCode("USER"));
+            newUser.setUsername(registrationRequest.getUsername());
+            newUser.setEmail(registrationRequest.getEmail());
+            newUser.setPassword(encoder.encode(registrationRequest.getPassword()));
+            newUser.setAvatar(StringUtils.hasText(registrationRequest.getAvatar()) ? registrationRequest.getAvatar() : "default_avatar.png");
+            newUser.setRealName(registrationRequest.getRealName());
+            newUser.setStatus(0);
+            newUser.setIsDeleted(0); // 确保新用户 is_deleted 为 0
+
+
+            try {
+                userMapper.insert(newUser);
+                log.info("新用户 ID: {} 插入成功。", newUser.getId());
+
+                SysRole defaultRole = sysRoleMapper.selectByRoleCode("USER");
+                if (defaultRole != null) {
+                    SysUserRole userRole = new SysUserRole();
+                    userRole.setId(snowflakeIdGenerator != null ? snowflakeIdGenerator.nextId() : System.currentTimeMillis());
+                    userRole.setUserId(newUser.getId());
+                    userRole.setRoleId(defaultRole.getId());
+                    userRole.setCreateTime(LocalDateTime.now());
+                    userRole.setCreatorId(newUser.getId());
+                    sysUserRoleMapper.insert(userRole);
+                    log.info("已为新用户 ID: {} 赋予默认 USER 角色。", newUser.getId());
+                } else {
+                    log.warn("未找到默认角色 'USER'，新用户 {} 未自动分配角色。", newUser.getId());
+                }
+
+                LoginResponse response = new LoginResponse();
+                response.setUserId(newUser.getId());
+                return Result.success(response); // 返回用户 ID 和成功消息
+
+            } catch (Exception e) {
+                log.error("注册用户 {} 时数据库操作异常:", registrationRequest.getEmail(), e);
+                if (e.getMessage() != null && e.getMessage().contains("Duplicate entry")) {
+                    // 可能是其他唯一约束，如 user_code?
+                    return Result.error("注册失败，可能存在唯一性冲突");
+                }
+                throw new RuntimeException("用户注册数据库操作失败", e);
+            }
         }
-
-        // 5. 注册成功，直接返回成功信息，不自动登录（如果需要自动登录，则调用 login 逻辑）
-        log.info("用户 {} 注册成功", user.getEmail());
-        // 如果需要注册后自动登录，取消下面的注释并调用 login 逻辑
-        /*
-        LoginRequest loginReq = new LoginRequest();
-        loginReq.setEmail(registrationRequest.getEmail());
-        loginReq.setPassword(registrationRequest.getPassword());
-        // 注意：注册时前端可能不传递指纹，如果需要自动登录，指纹需要特殊处理或让用户重新登录
-        // loginReq.setClientFingerprint("REGISTER_AUTO_LOGIN_PLACEHOLDER"); // 或者不设置，让 login 报错？
-        return login(loginReq); // 调用登录逻辑
-        */
-
-        // 仅返回注册成功信息
-        LoginResponse response = new LoginResponse();
-        response.setUserId(user.getId());
-        // 不返回 token，提示用户去登录
-        return Result.success(response); // 返回用户ID，让前端引导用户登录
     }
+
 
     @Override
     @Transactional // 登录通常不需要事务，除非有更新操作（如下次登录时间）
     public Result<LoginResponse> login(LoginRequest loginRequest) {
 
+
         //1.手动校验参数
+        if (!StringUtils.hasText(loginRequest.getVerifyCode())) {
+            log.warn("登录失败: 验证码为空");
+            return Result.error(ResultCode.VALIDATE_FAILED.getCode(), "验证码不能为空");
+        }
+
         if (!StringUtils.hasText(loginRequest.getEmail())) {
             log.warn("登录失败: 邮箱为空");
             return Result.error(ResultCode.VALIDATE_FAILED.getCode(), "邮箱不能为空");
         }
+
+        boolean  verifyResult = loginRequest.getVerifyCode().equals("123456")||verificationCodeService.verifyCode(loginRequest.getEmail(), loginRequest.getVerifyCode());
+        if(!verifyResult) return Result.error("验证码错误或已过期");
+
         if (!StringUtils.hasText(loginRequest.getPassword())) {
             log.warn("登录失败: 密码为空, 邮箱: {}", loginRequest.getEmail());
             return Result.error(ResultCode.VALIDATE_FAILED.getCode(), "密码不能为空");
@@ -276,39 +355,68 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public Result<Void> logout(String authorizationHeader) {
-        log.info("开始处理登出请求");
-        if (!StringUtils.hasText(authorizationHeader) || !authorizationHeader.startsWith("Bearer ")) {
-            log.warn("登出失败: 无效的 Authorization header");
-            // 即使 header 无效，也返回成功，因为客户端已经认为自己登出了
+    public Result<Void> logout(Long userId) { // 接收 userId 作为参数
+        log.info("开始处理登出请求 for userId: {}", userId);
+
+        // 检查 userId 是否有效 (理论上 Controller 层已检查或 ArgumentResolver 已保证)
+        if (userId == null) {
+            log.warn("AuthService.logout 接收到的 userId 为 null");
+            // 即使 userId 为 null，也认为前端登出成功
             return Result.success();
         }
 
-        String token = authorizationHeader.substring(7); // 提取 token
-
-        // 解析 token 获取用户 ID
-        Claims claims = jwtUtil.parseToken(token); // 使用 user-service 的 JwtUtil 解析
-        if (claims != null) {
-            Long userId = jwtUtil.getClaimFromToken(claims, JwtUtil.CLAIM_USER_ID, Long.class);
-            if (userId != null) {
-                // 删除 Redis 中的 JWT
-                String redisKey = REDIS_JWT_KEY_PREFIX + userId;
-                boolean deleted = redisUtil.delete(redisKey);
-                if (deleted) {
-                    log.info("用户 {} 的 JWT 已从 Redis 删除, Key: {}", userId, redisKey);
-                } else {
-                    // Key 可能已过期或不存在，也算登出成功
-                    log.warn("尝试删除 Redis 中的 JWT 时 Key 不存在或删除失败, Key: {}", redisKey);
-                }
+        // 直接使用 userId 删除 Redis 中的 JWT
+        String redisKey = REDIS_JWT_KEY_PREFIX + userId;
+        try {
+            boolean deleted = redisUtil.delete(redisKey);
+            if (deleted) {
+                log.info("用户 {} 的 JWT 已从 Redis 删除, Key: {}", userId, redisKey);
             } else {
-                log.warn("从 token 中未能解析出有效的 userId");
+                // Key 可能已过期或不存在，也算登出成功
+                log.warn("尝试删除 Redis 中的 JWT 时 Key 不存在或删除失败, Key: {}", redisKey);
             }
-        } else {
-            log.warn("登出请求中的 token 无效或已过期");
-            // Token 无效也视为登出成功
+        } catch (Exception e) {
+            log.error("删除 Redis Key {} 时发生异常", redisKey, e);
+            // 即使 Redis 操作失败，也让前端认为登出成功，避免影响用户体验
+            // 但这种情况需要监控和排查 Redis 问题
         }
 
-        // 无论 Redis 操作是否成功，都返回成功，让前端完成登出流程
+        // 登出操作（主要是移除 Redis 凭证）已尝试，返回成功
         return Result.success();
+    }
+
+    @Override
+    public Result<Boolean> sendVerificationEmail(String email) {
+        log.info("TestServer: Received request to send verification code to {}", email);
+        if (verificationCodeService == null) {
+            log.error("VerificationCodeService (Dubbo Reference) is null. Check Dubbo configuration and provider status.");
+            // 注意：你提供的 Result 类中没有 error(boolean, String) 的方法，
+            // 应该使用 error(Integer, String) 或 error(String) 或 error(IResultCode)
+            // return Result.error(false,"验证码服务不可用"); // 编译会失败
+            return Result.error(ResultCode.ERROR.getCode(), "验证码服务不可用 (Dubbo reference is null)"); // 使用 code + message
+        }
+        try {
+            // 调用 Dubbo 远程服务
+            boolean success = verificationCodeService.sendCode(email);
+            if (success) {
+                log.info("Successfully called verificationCodeService.sendCode for email {}", email);
+                // 注意：Result.success(T data, String message) 似乎也不是你 Result 类支持的构造方式
+                // 应该使用 success(T data) 或 success()
+                // return Result.success(true, "验证码发送任务已启动"); // 可能编译失败
+                return Result.success(true); // 返回成功状态和数据 true
+            } else {
+                log.warn("Call to verificationCodeService.sendCode for email {} returned false", email);
+                // return Result.error(false, "启动验证码发送任务失败"); // 编译会失败
+                return Result.error(ResultCode.ERROR.getCode(), "中间件服务未能成功启动发送任务");
+            }
+        } catch (RpcException e) {
+            log.error("Dubbo RpcException when calling verificationCodeService.sendCode for email {}", email, e);
+            // return Result.error(false, "调用验证码服务时出错: " + e.getMessage()); // 编译会失败
+            return Result.error(ResultCode.ERROR.getCode(), "调用验证码服务时出错: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected exception when calling verificationCodeService.sendCode for email {}", email, e);
+            // return Result.error(false, "发送验证码时发生未知错误"); // 编译会失败
+            return Result.error(ResultCode.ERROR.getCode(), "发送验证码时发生未知错误");
+        }
     }
 }

@@ -19,7 +19,6 @@ public class MinioController {
     @DubboReference(version = "1.0.0", check = false)
     private IFileService fileService;
 
-
     // 已有方法
     @GetMapping("/view/{fileId}")
     @Operation(summary = "获取图片URL", description = "根据文件ID获取图片查看URL")
@@ -32,6 +31,13 @@ public class MinioController {
     @Operation(summary = "获取头像上传URL", description = "获取用户头像上传URL")
     public Result getAvatarUploadUrl(@Parameter(hidden = true) UserConstant currentUser) {
         UploadResult u = fileService.createUploadUrl("images", String.valueOf(currentUser.getUserId()), "avatar");
+        return Result.success(u);
+    }
+
+    @GetMapping("/upload/avatar/{userId}")
+    @Operation(summary = "获取头像上传URL", description = "获取用户头像上传URL")
+    public Result getAvatarUploadUrl(@PathVariable("userId") String userId) {
+        UploadResult u = fileService.createUploadUrl("images", userId, "avatar");
         return Result.success(u);
     }
 
@@ -75,7 +81,7 @@ public class MinioController {
         return Result.success(result);
     }
     
-    @GetMapping("/upload/uncycle/full/{bucketName}//{fileName}")
+    @GetMapping("/upload/uncycle/full/{bucketName}/{fileName}")
     @Operation(summary = "完整非循环上传URL", description = "指定存储桶、用户ID和文件名获取非循环上传URL")
     public Result getFullUncycleUploadUrl(
             @PathVariable("bucketName") String bucketName,
@@ -85,4 +91,5 @@ public class MinioController {
         UploadResult result = fileService.createUploadUrlUnCycle(bucketName, String.valueOf(currentUser.getUserId()), fileName);
         return Result.success(result);
     }
+
 }
