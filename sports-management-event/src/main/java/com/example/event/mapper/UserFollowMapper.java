@@ -1,7 +1,8 @@
 package com.example.event.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.entity.UserFollow;
+
+import com.example.event.dao.UserFollow;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
