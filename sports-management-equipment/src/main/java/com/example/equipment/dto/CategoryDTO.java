@@ -16,10 +16,10 @@ public class CategoryDTO {
 
     private String description;  //分类描述
 
-    private float value;   //该类器材的借用 价格  1小时
+    private float value;   //该类器材的借用 价格  半个小时
 
-    private  Integer total;    //总数
+//    private  Integer total;    //总数
 
-    private  Integer stock;    //库存
+//    private  Integer stock;    //库存
 
 }

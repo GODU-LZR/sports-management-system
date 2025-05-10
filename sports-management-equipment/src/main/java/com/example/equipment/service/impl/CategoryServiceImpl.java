@@ -43,7 +43,6 @@ public class CategoryServiceImpl implements CategoryService {
 
         category.setCreateTime(LocalDateTime.now());  //设置创建时间
         category.setCategoryId(snowflakeIdGenerator.nextId());  //设置器材分类id
-        log.info("当前生成的器材分类雪花id为:{}",category.getCategoryId());
 
         category.setCreateId(currentUser.getUserId());
 
@@ -68,7 +67,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void updateCategory(CategoryDTO categoryDTO, UserConstant currentUser) {
-
 
         EquipmentCategory equipmentCategory = new EquipmentCategory();
 

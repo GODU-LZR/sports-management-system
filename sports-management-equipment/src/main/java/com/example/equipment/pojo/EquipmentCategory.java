@@ -22,6 +22,8 @@ public class EquipmentCategory {
 
     private  Integer total;    //总数
 
+    private Integer bookStock;    //账面库存
+
     private  Integer stock;    //库存
 
     private LocalDateTime createTime;
@@ -31,5 +33,4 @@ public class EquipmentCategory {
     private Long createId;
 
     private Long modifiedId;
-
 }
