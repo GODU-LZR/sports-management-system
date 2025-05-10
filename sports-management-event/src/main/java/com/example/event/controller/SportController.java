@@ -2,6 +2,7 @@ package com.example.event.controller;
 import com.example.common.response.Result;
 import com.example.event.DTO.vo.SportVO;
 import com.example.event.service.SportService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ public class SportController {
      *
      * @return 带赛事的体育项目列表
      */
+
     @GetMapping("/type")
     public Result<List<SportVO>> getSport1() {
         List<SportVO> sportData = sportService.getSportWithGames();
