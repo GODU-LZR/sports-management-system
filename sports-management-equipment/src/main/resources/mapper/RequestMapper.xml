@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.equipment.mapper.RequestMapper">
+
+    <!-- 定义 AdminRequestVO 的结果映射 -->
+    <resultMap id="adminRequestVoMap" type="com.example.equipment.vo.AdminRequestVO">
+        <!-- id 标签用于指定主键，MyBatis 根据主键进行分组 -->
+        <!-- 这里的 request_id 是请求的主键，用于区分不同的请求 -->
+        <id property="requestId" column="request_id"/>
+
+        <!-- result 标签用于映射 AdminRequestVO 的简单字段 -->
+        <!-- 这些字段与 request_id 是一对一的关系 -->
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="username"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifiedTime" column="modified_time"/>
+        <result property="cancellerId" column="canceller_id"/>
+        <result property="reviewId" column="review_id"/>
+        <result property="isRevoked" column="is_revoked"/>
+
+        <!-- collection 标签用于映射集合字段 (List<BorrowEquipment>) -->
+        <!-- property: AdminRequestVO 中的 List 字段名 -->
+        <!-- ofType: List 中元素的类型 (BorrowEquipment 的全限定名) -->
+        <!-- MyBatis 会根据外层 resultMap 的 id (request_id) 和 collection 内部的映射来分组 -->
+        <collection property="equipmentList" ofType="com.example.equipment.pojo.BorrowEquipment">
+            <!-- result 标签映射 BorrowEquipment 的字段 -->
+            <!-- name 映射到器材类别名称 -->
+            <result property="name" column="equipment_name"/>
+            <!-- quantity 映射到 SQL 中计算出的总数量列 -->
+            <result property="quantity" column="total_quantity"/>
+        </collection>
+    </resultMap>
+
+    <!-- 定义查询请求列表的 SQL 语句 -->
+    <!-- id 属性必须与 Mapper 接口中的方法名一致 -->
+    <!-- resultMap 属性引用上面定义的结果映射 -->
+    <select id="selectRequestsByCriteria" resultMap="adminRequestVoMap">
+        SELECT
+        er.request_id,
+        er.user_id,
+        su.username,
+        er.start_time,
+        er.end_time,
+        er.status,
+        er.create_time,
+        er.modified_time,
+        er.canceller_id,
+        er.review_id,
+        er.is_revoked,
+        -- Fields for the collection (BorrowEquipment)
+        ec.name AS equipment_name, -- 器材类别名称
+        SUM(er.quantity) AS total_quantity -- *** 计算同类器材的总数量 ***
+        FROM
+        equipment_request er
+        JOIN
+        equipment e ON er.equipment_id = e.equipment_id
+        JOIN
+        equipment_category ec ON e.category_id = ec.category_id
+        JOIN
+        sys_user su ON er.user_id = su.id
+        <where>
+            <if test="dto.userName != null and dto.userName != ''">
+                AND su.username LIKE CONCAT('%', #{dto.userName}, '%')
+            </if>
+            <if test="dto.equipmentName != null and dto.equipmentName != ''">
+                AND ec.name LIKE CONCAT('%', #{dto.equipmentName}, '%')
+            </if>
+            <if test="dto.status != null">
+                AND er.status = #{dto.status}
+            </if>
+        </where>
+        -- *** 根据请求ID和器材类别进行分组 ***
+        -- 需要将所有非聚合的 SELECT 字段都放到 GROUP BY 子句中
+        GROUP BY
+        er.request_id,
+        er.user_id,
+        su.username,
+        er.start_time,
+        er.end_time,
+        er.status,
+        er.create_time,
+        er.modified_time,
+        er.canceller_id,
+        er.review_id,
+        er.is_revoked,
+        ec.category_id, -- 通常按ID分组更准确
+        ec.name         -- 也包含name，因为在SELECT中了
+        ORDER BY
+        er.start_time DESC, -- 主要按开始时间升序
+        er.create_time DESC -- 次要按创建时间倒序 (可选，但常用)
+    </select>
+
+
+    <!-- 查询当前用户的所有器材借用请求，并根据DTO中的条件进行筛选 -->
+    <select id="selectUserRequestsByCriteria" resultMap="adminRequestVoMap">
+    SELECT
+    er.request_id,
+    er.user_id,
+    su.username,
+    er.start_time,
+    er.end_time,
+    er.status,
+    er.create_time,
+    er.modified_time,
+    er.canceller_id,
+    er.review_id,
+    er.is_revoked,
+    ec.name AS equipment_name,
+    SUM(er.quantity) AS total_quantity -- 计算同类器材的总数量
+    FROM
+    equipment_request er
+    JOIN
+    equipment e ON er.equipment_id = e.equipment_id
+    JOIN
+    equipment_category ec ON e.category_id = ec.category_id
+    JOIN
+    sys_user su ON er.user_id = su.id
+    <where>
+        -- *** 强制过滤条件：只查询当前用户的请求 ***
+        er.user_id = #{userId}
+        -- *** 可选过滤条件：来自 DTO (SelectUserRequestDTO) ***
+        <!-- 移除根据 userName 筛选的条件，因为这是用户自己的请求 -->
+        <!-- <if test="dto.userName != null and dto.userName != ''">
+            AND su.username LIKE CONCAT('%', #{dto.userName}, '%')
+        </if> -->
+        <if test="dto.equipmentName != null and dto.equipmentName != ''">
+            AND ec.name LIKE CONCAT('%', #{dto.equipmentName}, '%')
+        </if>
+        <if test="dto.status != null">
+            AND er.status = #{dto.status}
+        </if>
+        <!-- 如果 DTO 中还有其他筛选字段，可以在这里添加对应的 <if> 条件 -->
+    </where>
+    GROUP BY
+    er.request_id,
+    er.user_id,
+    su.username,
+    er.start_time,
+    er.end_time,
+    er.status,
+    er.create_time,
+    er.modified_time,
+    er.canceller_id,
+    er.review_id,
+    er.is_revoked,
+    ec.category_id, -- 按器材类别ID分组
+    ec.name         -- 按器材类别名称分组
+    ORDER BY
+    er.start_time DESC, -- 主要按开始时间倒序
+    er.create_time DESC -- 次要按创建时间倒序
+    </select>
+</mapper>

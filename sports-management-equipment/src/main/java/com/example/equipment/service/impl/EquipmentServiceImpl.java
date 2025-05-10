@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static java.lang.Math.random;
 
@@ -93,9 +94,13 @@ public class EquipmentServiceImpl  extends ServiceImpl<EquipmentMapper, Equipmen
     public void deleteEquipment(Long equipmentId,UserConstant userConstant) {
 
         Long userId = userConstant.getUserId();
-
         if (equipmentId !=null){
+//          Equipment equipment = equipmentMapper.find_IS_used(equipmentId);
+
             equipmentMapper.delete(equipmentId,userId);
+
+//            categoryMapper.reduceEquipment(equipmentId);
+
         }
 
     }

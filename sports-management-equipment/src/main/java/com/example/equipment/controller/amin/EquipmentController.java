@@ -54,7 +54,6 @@ public class EquipmentController {
             IPage<EquipmentVO> pageResult = equipmentService.PageSelect(query);
             // 使用你的 Result 类封装成功结果
             return Result.success(pageResult);
-
     }
 
 

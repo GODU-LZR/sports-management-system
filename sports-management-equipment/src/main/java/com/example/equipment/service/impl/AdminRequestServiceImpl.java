@@ -6,12 +6,14 @@ import com.example.common.utils.SnowflakeIdGenerator;
 import com.example.equipment.dto.BorrowRequestDTO;
 import com.example.equipment.dto.ReviewRequestDTO;
 import com.example.equipment.dto.RevokeRequestDTO;
+import com.example.equipment.dto.SelectAllRequestDTO;
 import com.example.equipment.mapper.CategoryMapper;
 import com.example.equipment.mapper.EquipmentMapper;
 import com.example.equipment.mapper.RequestMapper;
 import com.example.equipment.pojo.EquipmentBorrowRequest;
 import com.example.equipment.pojo.EquipmentId;
 import com.example.equipment.service.AdminRequestService;
+import com.example.equipment.vo.AdminRequestVO;
 import com.example.equipment.vo.RequestVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -62,27 +64,28 @@ public class AdminRequestServiceImpl implements AdminRequestService {
         {
             //如果 发过来的请求为 1 即表示通过
             //库存信息及时更新
-            //对Equipment 以及equipment_category表进行变动 对应的equipment_id
-//            Integer num = requestDTO.getQuantity();
 
+            //对Equipment 以及equipment_category表进行变动 对应的equipment_id
             for(RequestVO request :list1){
 
+                //审核通过，将器材状态设置为不可用
                 equipmentMapper.setEquipment_Status_To_0(request.getEquipmentId());//将请求列表的器材Id 传入 进行状态的修改
 
-                categoryMapper.BorrowEqp(request.getEquipmentId());
+//                categoryMapper.BorrowEqp(request.getEquipmentId());
             }
         }
-//        if(status == 2){
-//            //拒接请求
-//
-//            //依旧是对未审核的请求进行操作
-//
-//            for(RequestVO requestVO : list1){
-//
-//
-//            }
-//
-//        }
+        if(status == 2){
+            //拒接请求
+
+            //依旧是对未审核的请求进行操作
+            for(RequestVO requestVO : list1){
+                /**
+                 * 尽管不需要对器材的状态等信息修改
+                 * 但是依旧需要对器材的账面库存修改
+                 */
+                categoryMapper.raiseBookStock(requestVO.getEquipmentId());
+            }
+        }
         //如果是归还
         if(status == 3){
 
@@ -95,7 +98,6 @@ public class AdminRequestServiceImpl implements AdminRequestService {
                 //对器材分类的数量进行更新
                 categoryMapper.ReturnEqp(request.getEquipmentId());
             }
-
         }
 
 //        根据传入的状态进行操作
@@ -103,6 +105,20 @@ public class AdminRequestServiceImpl implements AdminRequestService {
         log.info("管理员已对请求做出操作");
 
     }
+
+    /**
+     * 模糊获取所有的请求
+     * @param requestDTO
+     * @return
+     */
+    @Override
+    public List<AdminRequestVO> getAllRequest(SelectAllRequestDTO requestDTO) {
+
+        List<AdminRequestVO> requestList =requestMapper.selectRequestsByCriteria(requestDTO);
+
+        return requestList;
+    }
+
 
 
 }

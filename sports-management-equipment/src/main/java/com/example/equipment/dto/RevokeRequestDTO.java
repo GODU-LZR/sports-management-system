@@ -1,7 +1,7 @@
 package com.example.equipment.dto;
 
 
-import com.example.equipment.pojo.BorrowEquipment;
+import com.example.equipment.pojo.EquipmentId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,14 +12,17 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BorrowRequestDTO {
+public class RevokeRequestDTO {
 
+    private Long requestId;    //请求的Id
 
-    //请求里面包含的器材名称 对应的数量
-    private List<BorrowEquipment> equipmentList;  //用户预约器材的类型名称  篮球  排球
+    private List<EquipmentId> equipmentIds;  //一次请求 所包含的器材Id
+
+    private Integer quantity;    //申请器材 的数量
 
     private LocalDateTime startTime;   //借用开始时间
 
     private LocalDateTime endTime;   //借用结束时间
+
 
 }
