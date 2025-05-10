@@ -76,7 +76,13 @@ public class Result<T> implements Serializable {
                 .setMessage(message); // 设置传入的 message
     }
 
-
+    public static <T> Result<T> success(String message, T data) {
+        Result<T> result = new Result<>();
+        result.setCode(200);
+        result.setMessage(message);
+        result.setData(data);
+        return result;
+    }
     @Override
     public String toString() {
         try {

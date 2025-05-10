@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.event.mapper.basketball.BasketballShotChartMapper">
+
+    <select id="selectShotChart" resultMap="shotChartResultMap">
+        SELECT
+            emb.home_team_id,
+            emb.away_team_id,
+            home.team_id AS home_team_id,
+            home.made_shots AS home_made,
+            home.attempted_shots AS home_attempt,
+            home.shot_percent AS home_pct,
+            away.team_id AS away_team_id,
+            away.made_shots AS away_made,
+            away.attempted_shots AS away_attempt,
+            away.shot_percent AS away_pct
+        FROM
+            event_basketball_match emb
+                LEFT JOIN
+            event_basketball_shot_chart home ON emb.match_id = home.match_id AND emb.home_team_id = home.team_id
+                LEFT JOIN
+            event_basketball_shot_chart away ON emb.match_id = away.match_id AND emb.away_team_id = away.team_id
+        WHERE
+            emb.match_id = #{match_id};
+    </select>
+
+    <resultMap id="shotChartResultMap" type="com.example.event.DTO.basketball.matchdata.ShotChart">
+        <result property="hometeamId" column="home_team_id" jdbcType="BIGINT" />
+        <result property="awayteamId" column="away_team_id" jdbcType="BIGINT" />
+        <association property="home" javaType="com.example.event.DTO.basketball.matchdata.ShotChart$TeamShot">
+            <result property="team" column="home_team_id" jdbcType="BIGINT" />
+            <result property="made" column="home_made" jdbcType="INTEGER" />
+            <result property="attempt" column="home_attempt" jdbcType="INTEGER" />
+            <result property="pct" column="home_pct" jdbcType="DOUBLE" />
+        </association>
+        <association property="away" javaType="com.example.event.DTO.basketball.matchdata.ShotChart$TeamShot">
+            <result property="team" column="away_team_id" jdbcType="BIGINT" />
+            <result property="made" column="away_made" jdbcType="INTEGER" />
+            <result property="attempt" column="away_attempt" jdbcType="INTEGER" />
+            <result property="pct" column="away_pct" jdbcType="DOUBLE" />
+        </association>
+    </resultMap>
+</mapper>

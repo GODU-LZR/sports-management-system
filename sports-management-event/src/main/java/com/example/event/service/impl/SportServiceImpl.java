@@ -1,0 +1,168 @@
+package com.example.event.service.impl;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+
+import com.example.event.DTO.vo.GameVO;
+import com.example.event.DTO.vo.SportVO;
+import com.example.event.dao.Game;
+import com.example.event.dao.Sport;
+import com.example.event.mapper.GameMapper;
+import com.example.event.mapper.SportMapper;
+import com.example.event.service.SportService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * 体育项目服务实现类
+ */
+@Service
+@RequiredArgsConstructor
+public class SportServiceImpl implements SportService {
+
+    private final SportMapper sportMapper;
+    private final GameMapper gameMapper;
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    @Override
+    public List<SportVO> getSportWithGames() {
+        // 获取带赛事的体育项目数据
+        List<Map<String, Object>> sportWithGames = sportMapper.getSportWithGames();
+
+        // 转换为前端需要的格式
+        Map<Long, SportVO> sportMap = new HashMap<>();
+
+        for (Map<String, Object> item : sportWithGames) {
+            Long sportId = ((Number) item.get("sport_id")).longValue();
+            String sportName = (String) item.get("name");
+            Long gameId = item.get("game_id") != null ? ((Number) item.get("game_id")).longValue() : null;
+            String gameName = (String) item.get("game_name");
+
+            // 如果sportMap中不存在该体育项目，则创建一个新的SportVO对象
+            if (!sportMap.containsKey(sportId)) {
+                SportVO sportVO = new SportVO();
+                sportVO.setSportId(sportId);
+                sportVO.setName(sportName);
+                sportVO.setGames(new ArrayList<>());
+                sportMap.put(sportId, sportVO);
+            }
+
+            // 如果gameId不为空，则添加到对应体育项目的games列表中
+            if (gameId != null && gameName != null) {
+                GameVO gameVO = new GameVO();
+                gameVO.setGameId(gameId);
+                gameVO.setName(gameName);
+                sportMap.get(sportId).getGames().add(gameVO);
+            }
+        }
+
+        // 返回结果
+        return new ArrayList<>(sportMap.values());
+    }
+
+    @Override
+    public List<SportVO> getSportList() {
+        // 获取不带赛事列表的体育项目数据
+        List<Sport> sportList = sportMapper.getSportList();
+
+        // 转换为前端需要的格式
+        return sportList.stream().map(sport -> {
+            SportVO sportVO = new SportVO();
+            BeanUtils.copyProperties(sport, sportVO);
+            return sportVO;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, Object> getCompetitionData(Integer sportId, Integer page, Map<String, Object> filter) {
+        // 处理过滤条件
+        String name = filter != null && filter.containsKey("name") ? (String) filter.get("name") : null;
+        String state = filter != null && filter.containsKey("state") ? (String) filter.get("state") : null;
+
+        // 处理时间过滤条件
+        LocalDateTime registerTime = null;
+        if (filter != null && filter.containsKey("registerTime")) {
+            String registerTimeStr = (String) filter.get("registerTime");
+            if (registerTimeStr != null && !registerTimeStr.isEmpty()) {
+                registerTime = LocalDateTime.parse(registerTimeStr, DATE_TIME_FORMATTER);
+            }
+        }
+
+        LocalDateTime time = null;
+        if (filter != null && filter.containsKey("time")) {
+            String timeStr = (String) filter.get("time");
+            if (timeStr != null && !timeStr.isEmpty()) {
+                time = LocalDateTime.parse(timeStr, DATE_TIME_FORMATTER);
+            }
+        }
+
+        // 调用GameMapper获取分页数据
+        IPage<Game> gameIPage = gameMapper.getCompetitionData(
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(page, 10),
+                sportId.longValue(),
+                name,
+                state,
+                registerTime,
+                time
+        );
+
+        // 转换为前端需要的格式
+        List<Map<String, Object>> records = gameIPage.getRecords().stream()
+                .map(this::convertGameToMap)
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("records", records);
+        result.put("total", gameIPage.getTotal());
+        result.put("pages", gameIPage.getPages());
+        result.put("current", gameIPage.getCurrent());
+
+        return result;
+    }
+
+    @Override
+    public Integer getCompetitionCount(Integer sportId) {
+        return gameMapper.getCompetitionCount(sportId.longValue());
+    }
+
+    /**
+     * 将Game实体转换为Map
+     */
+    private Map<String, Object> convertGameToMap(Game game) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("gameId", game.getGameId());
+        map.put("name", game.getName());
+        map.put("sportId", game.getSportId());
+        map.put("responsiblePeople", game.getResponsiblePeople());
+        map.put("registerStartTime", game.getRegisterStartTime());
+        map.put("registerEndTime", game.getRegisterEndTime());
+        map.put("startTime", game.getStartTime());
+        map.put("endTime", game.getEndTime());
+
+
+        // 计算赛事状态
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(game.getRegisterStartTime())) {
+            map.put("state", "不可报名");
+        } else if (now.isAfter(game.getRegisterStartTime()) && now.isBefore(game.getRegisterEndTime())) {
+            map.put("state", "可报名");
+        } else if (now.isAfter(game.getRegisterEndTime()) && now.isBefore(game.getStartTime())) {
+            map.put("state", "未开始");
+        } else if (now.isAfter(game.getStartTime()) && now.isBefore(game.getEndTime())) {
+            map.put("state", "正在举行");
+        } else {
+            map.put("state", "已结束");
+        }
+
+        return map;
+    }
+}

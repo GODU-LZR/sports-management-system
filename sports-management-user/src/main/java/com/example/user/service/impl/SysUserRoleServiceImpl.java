@@ -66,4 +66,6 @@ public class SysUserRoleServiceImpl implements SysUserRoleService {
     public Result<List<SysUserRole>> getAllUserRoles() {
         return Result.success(sysUserRoleMapper.selectList());
     }
+
+
 }

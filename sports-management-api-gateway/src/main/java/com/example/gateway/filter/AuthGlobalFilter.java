@@ -81,6 +81,7 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
         // ... 白名单列表保持不变 ...
         WHITE_LIST.add("/api/user/login");
         WHITE_LIST.add("/api/user/register");
+        WHITE_LIST.add("/api/user/sendVerificationCode");
         WHITE_LIST.add("/swagger-ui.html");
         WHITE_LIST.add("/swagger-ui/");
         WHITE_LIST.add("/swagger-ui/**");
@@ -101,8 +102,8 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
         WHITE_LIST.add("/api/finance/v3/api-docs/");
         WHITE_LIST.add("/api/forum/v3/api-docs");
         WHITE_LIST.add("/api/forum/v3/api-docs/");
-        WHITE_LIST.add("/api/notification/v3/api-docs");
-        WHITE_LIST.add("/api/notification/v3/api-docs/");
+        WHITE_LIST.add("/api/middleware/v3/api-docs");
+        WHITE_LIST.add("/api/middleware/v3/api-docs/");
         WHITE_LIST.add("/api/ai/v3/api-docs");
         WHITE_LIST.add("/api/ai/v3/api-docs/");
     }

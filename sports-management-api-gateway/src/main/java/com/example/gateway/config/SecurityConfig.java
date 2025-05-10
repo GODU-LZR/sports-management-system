@@ -32,7 +32,7 @@ public class SecurityConfig {
                 // 移除这里的cors()配置，使用我们自定义的CorsWebFilter
                 .authorizeExchange()
                 // 明确允许身份验证端点
-                .pathMatchers("/api/user/login", "/api/user/register").permitAll()
+                .pathMatchers("/api/user/login", "/api/user/register","/api/user/sendVerificationCode").permitAll()
                 // 允许所有 OPTIONS 请求，预检请求必须通过
                 .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // 将认证要求放在最后

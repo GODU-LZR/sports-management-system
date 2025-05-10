@@ -19,4 +19,7 @@ public class RegistrationRequest {
 
     @Schema(description = "头像URL", required = true)
     private String avatar;
+
+    @Schema(description = "验证码", required = true)
+    private String verifyCode;
 }

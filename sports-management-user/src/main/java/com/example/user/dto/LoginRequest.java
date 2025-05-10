@@ -13,6 +13,9 @@ public class LoginRequest {
     @Schema(description = "用户密码", requiredMode = Schema.RequiredMode.REQUIRED, example = "yourpassword") // 使用 Schema 描述字段
     private String password;
 
+    @Schema(description = "验证码", requiredMode = Schema.RequiredMode.REQUIRED, example = "123456") // 使用 Schema 描述字段
+    private String verifyCode;
+
     /**
      * 客户端指纹 (由前端计算并传入)
      * 新增字段
