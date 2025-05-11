@@ -1,9 +1,9 @@
 package com.example.common.enums;
-
+import com.baomidou.mybatisplus.annotation.IEnum;
 import lombok.Getter;
 
 @Getter
-public enum OrderAmountStatus {
+public enum OrderAmountStatus implements IEnum<String>{
     // --- 支付相关 ---
     PENDING_PAYMENT(10, "待支付"),         // 订单已创建，等待用户支付
     PAYMENT_INITIATED(20, "支付已发起"),    // 用户点击支付按钮后
@@ -11,16 +11,17 @@ public enum OrderAmountStatus {
     PAYMENT_FAILED(40, "支付失败"),        // 支付尝试失败
     PARTIALLY_PAID(50, "部分支付"),        // 用户支付了部分金额 (如果你的业务支持)
     PAID(60, "已支付"),                 // 用户已全额支付
-    PAYMENT_CONFIRMED(70, "支付已确认"),    // 支付平台返回成功，待内部确认
-
+    PAYMENT_CONFIRMED(70, "支付已确认"),
+    // 支付平台返回成功，待内部确认
+    ORDER_CANCEL(75, "订单中止/结束"),
     // --- 退款相关 ---
     REFUND_REQUESTED(80, "退款申请中"),      // 用户发起退款申请
     AWAITING_REFUND_CONFIRMATION(90, "待退款确认"), // 退款申请待平台或商家确认
     REFUND_PROCESSING(100, "退款处理中"),    // 退款申请已批准，正在进行退款操作
     REFUND_FAILED(110, "退款失败"),        // 退款操作未能成功
     PARTIALLY_REFUNDED(120, "部分退款"),     // 部分金额已退回给用户
-    REFUNDED(130, "已退款");              // 全额金额已退回给用户
-
+    REFUNDED(130, "已退款"),             // 全额金额已退回给用户
+    ORDER_FINISH(1000,"完全结束");
     private final int code;
     private final String description;
 
@@ -82,5 +83,10 @@ public enum OrderAmountStatus {
         }
         // ... 添加其他状态的流转规则
         return false; // 默认不允许流转
+    }
+
+    @Override
+    public String getValue() {
+        return description;
     }
 }
