@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public Result<?> handleException(Exception e) {
         log.error("系统异常：{}", e.getMessage(), e);
-        return Result.error("系统异常，请联系管理员");
+        return Result.error("on(系统异常，请联系管理员");
     }
     @ExceptionHandler(org.apache.dubbo.rpc.RpcException.class)
     public Result<?>handleDubboException(RpcException e){

@@ -22,6 +22,7 @@ public class RedisUtil {
     // 使用 SLF4J 进行日志记录
     private static final Logger log = LoggerFactory.getLogger(RedisUtil.class);
 
+
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
