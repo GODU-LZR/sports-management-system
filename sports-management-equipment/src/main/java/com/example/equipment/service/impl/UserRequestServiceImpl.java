@@ -1,19 +1,14 @@
 package com.example.equipment.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.equipment.constant.OrderEquipmentStatusConstant;
+import com.example.equipment.pojo.OrderItem;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.common.constant.UserConstant;
 import com.example.common.utils.SnowflakeIdGenerator;
 import com.example.equipment.dto.BorrowRequestDTO;
 import com.example.equipment.dto.RevokeRequestDTO;
-import com.example.equipment.dto.SelectAllRequestDTO;
 import com.example.equipment.dto.SelectUserRequestDTO;
-import com.example.equipment.dto.utilDTO.RequestPageQuery;
-import com.example.equipment.mapper.CategoryMapper;
-import com.example.equipment.mapper.EquipmentMapper;
-import com.example.equipment.mapper.RequestMapper;
+import com.example.equipment.mapper.*;
 import com.example.equipment.pojo.*;
 import com.example.equipment.service.UserRequestService;
 import com.example.equipment.vo.AdminRequestVO;
@@ -24,8 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -42,12 +39,19 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
     CategoryMapper categoryMapper;
 
     @Autowired
+    EquipmentOrderMapper orderMapper;
+
+    @Autowired
+    EquipmentOrderItemMapper orderItemMapper;
+
+    @Autowired
     SnowflakeIdGenerator snowflakeIdGenerator;
 
     private static final int CANCEL_THRESHOLD_MINUTES = 10;
 
     // 定义自动审核的数量阈值
     private static final int AUTO_APPROVE_QUANTITY_THRESHOLD = 5; // 例如：请求数量小于等于5个时自动审核
+
 
     /**
      * 处理器材借用请求
@@ -79,13 +83,23 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
             throw new IllegalArgumentException("预约结束时间必须在开始时间之后");
         }
 
-        // 计算借用时长
+        // 计算借用时长 (分钟)
         Duration duration = Duration.between(borrowRequestDTO.getStartTime(), borrowRequestDTO.getEndTime());
+        long durationMinutes = duration.toMinutes(); // 获取分钟数
 
         // 检查时长是否大于等于30分钟
-        if (duration.toMinutes() < 30) {
+        if (durationMinutes < 30) {
             throw new IllegalArgumentException("预约时间在30分钟起步");
         }
+
+        // **计算按半小时计费的有效时长 (小时)**
+        // 计算半小时块数，不足半小时按半小时计算 (向上取整)
+        long numHalfHourBlocks = (durationMinutes + 29) / 30;
+        // 计算有效的计费小时数
+        double effectiveDurationHours = numHalfHourBlocks * 0.5;
+        log.info("原始借用时长: {} 分钟, 按半小时计费有效时长: {} 小时 ({} 个半小时块)",
+                durationMinutes, effectiveDurationHours, numHalfHourBlocks);
+
 
         // 获取前端传送的器材列表
         List<BorrowEquipment> borrowEquipmentList = borrowRequestDTO.getEquipmentList();
@@ -119,8 +133,12 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
         int finalRequestStatus = overallNeedsManualReview ? 0 : 1;
         log.info("请求ID {} 确定最终状态: {}", snowId, finalRequestStatus == 1 ? "自动通过" : "审核中");
 
+        // 收集所有自动批准生成 OrderItem 的列表 (仅在自动通过时使用)
+        List<OrderItem> orderItemsToInsert = new ArrayList<>();
+        // 用于累加总金额 (仅在自动通过时使用)
+        double totalAmount = 0.0;
 
-        // **4. 遍历器材列表，执行可用性检查和插入请求记录**
+        // **4. 遍历器材列表，执行可用性检查和处理**
         // 如果在处理某个器材时发现可用性不足，整个请求应该失败（通过抛异常和事务回滚）
         for (BorrowEquipment item : borrowEquipmentList) {
             Integer requestedQuantity = item.getQuantity();
@@ -134,10 +152,14 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
                 throw new IllegalArgumentException("器材分类 '" + item.getName() + "' 不存在");
             }
 
-//           if(item.getQuantity()> equipmentCategory.getBookStock()) {
-//               throw new IllegalArgumentException("账面库存不足");
-//           }
+            // 获取该分类的每小时价格
+            float hourlyPrice = equipmentCategory.getValue();
+            if (hourlyPrice < 0) { // 简单的价格校验
+                throw new IllegalArgumentException("器材分类 '" + item.getName() + "' 的价格无效");
+            }
 
+            // **计算单个器材在整个借用时长内的费用 (使用有效时长)**
+            double itemCost = hourlyPrice * effectiveDurationHours;
 
             // 4.2. 查询在指定时间段内可用的具体器材ID列表
             // Mapper方法使用了 limit，只会返回最多 requestedQuantity 个可用器材ID
@@ -159,47 +181,119 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
                         + availableEquipmentIds.size() + "/" + requestedQuantity + ")，请重新预约");
             }
 
-            // **4.4. 插入请求记录并更新相关状态**
-            // 遍历找到的可用器材ID，为每个器材创建一个请求记录
-            // 因为上面的检查已经确保了 availableEquipmentIds.size() == requestedQuantity (如果找到足够的话)
+            // **4.4. 遍历找到的可用器材ID，进行处理**
             for (Long equipmentId : availableEquipmentIds) { // 直接遍历找到的可用器材ID
-                EquipmentBorrowRequest request = new EquipmentBorrowRequest();
 
-                // 拷贝基本属性
-                BeanUtils.copyProperties(borrowRequestDTO, request);
+                // **4.5. 根据最终状态处理：插入请求记录 或 准备订单明细**
+                if (finalRequestStatus == 0) { // 需要手动审核
+                    EquipmentBorrowRequest request = new EquipmentBorrowRequest();
+                    // 拷贝基本属性
+                    BeanUtils.copyProperties(borrowRequestDTO, request);
+                    request.setEquipmentId(equipmentId); // 设置具体的器材ID
+                    request.setRequestId(snowId);       // 使用同一个请求ID
+                    request.setCreateTime(now);         // 创建时间
+                    request.setUserId(userId);          // 用户ID
+                    request.setQuantity(1);             // 每条记录代表一个具体的器材，数量为1
+                    request.setStatus(0); // 审核中
+                    request.setIsRevoked(0);            // 默认未撤销
 
-                request.setEquipmentId(equipmentId); // 设置具体的器材ID
-                request.setRequestId(snowId);       // 使用同一个请求ID
-                request.setCreateTime(now);         // 创建时间
-                request.setUserId(userId);          // 用户ID
-                request.setQuantity(1);             // 每条记录代表一个具体的器材，数量为1
-                request.setStatus(finalRequestStatus); // **使用整个请求的最终状态**
-                request.setIsRevoked(0);            // 默认未撤销
+                    log.info("手动审核流程：准备为器材ID {} 插入请求记录 (请求ID: {}, 状态: {})", equipmentId, snowId, 0);
+                    requestMapper.insertBorrowRequest(request);
 
-                log.info("准备为器材ID {} 插入请求记录 (请求ID: {}, 状态: {})", equipmentId, snowId, finalRequestStatus);
-                requestMapper.insertBorrowRequest(request);
+                } else { // finalRequestStatus == 1, 自动通过
 
-                 // **4.5. 根据最终状态更新具体器材的状态**
+                    EquipmentBorrowRequest request = new EquipmentBorrowRequest();
+                    // 拷贝基本属性
+                    BeanUtils.copyProperties(borrowRequestDTO, request);
+                    request.setEquipmentId(equipmentId); // 设置具体的器材ID
+                    request.setRequestId(snowId);       // 使用同一个请求ID
+                    request.setCreateTime(now);         // 创建时间
+                    request.setUserId(userId);          // 用户ID
+                    request.setQuantity(1);             // 每条记录代表一个具体的器材，数量为1
+                    request.setStatus(1); // 审核中
+                    request.setIsRevoked(0);            // 默认未撤销
 
-                //如果是自动审核 的 自动生成一个订单
-                if (finalRequestStatus == 1) {
-//                    // 假设 equipmentMapper.setEquipment_Status_To_0(equipmentId) 将器材状态更新为已借出/使用中 (例如状态码为0)
-//                    equipmentMapper.setEquipment_Status_To_0(equipmentId);
-//                    log.info("器材ID {} 状态更新为 0 (已借出),请求已自动通过", equipmentId);
+                    log.info("自动审核流程：准备为器材ID {} 插入请求记录 (请求ID: {}, 状态: {})", equipmentId, snowId, 1);
+                    requestMapper.insertBorrowRequest(request);
 
+
+                    // 为这些自动通过的具体器材创建 OrderItem 并计算费用
+                    OrderItem orderItem = new OrderItem();
+                    // orderId 会在订单主表插入后设置
+                    orderItem.setEquipmentId(equipmentId);
+//                    orderItem.setQuantity(1); // 具体器材数量为1
+//                    orderItem.setUnitPrice((double) hourlyPrice); // 存储每小时单价 (或者根据业务需要存储计算后的总价/数量)
+                    orderItem.setItemAmount(BigDecimal.valueOf(itemCost)); // 存储单个器材的总费用
+                    // 设置明细项初始状态为“待借出” (使用 OrderEquipmentStatusConstant)
+                    orderItem.setItemStatusId(OrderEquipmentStatusConstant.UNUSED.getId()); // 的ID是1
+                    // 可以选择性地关联到原始请求ID，如果 EquipmentBorrowRequest 记录也被创建了
+                    // orderItem.setRequestId(snowId);
+
+                    orderItemsToInsert.add(orderItem);
+
+                    log.info("自动通过流程：为器材ID {} 准备订单明细项，费用: {}", equipmentId, itemCost);
+                    // 在自动通过流程中，我们不再向 EquipmentBorrowRequest 表插入状态为1的记录
+                    // 而是直接创建订单和订单明细项。
                 }
 
                 // **4.6. 更新器材分类的账面库存**
                 // 无论请求状态如何，这些具体的器材都已经被本次请求“预定”或“申请”，账面库存应该减少
-                // 假设 categoryMapper.setBookStock(equipmentId) 会找到 equipmentId 对应的分类并将其账面库存减1
+                // 假设 categoryMapper.reduceBookStock(equipmentId) 会找到 equipmentId 对应的分类并将其账面库存减1
                 categoryMapper.reduceBookStock(equipmentId);
                 log.info("器材ID {} 对应的分类账面库存已更新", equipmentId);
             }
+            // 在处理完一个器材类型的可用器材后，将该类型所有器材的总费用累加到总金额
+            if (finalRequestStatus == 1) {
+                totalAmount += itemCost * availableEquipmentIds.size(); // itemCost 是单个器材的费用
+            }
         }
 
-        // 整个请求处理完成，如果走到这里说明所有器材都通过了可用性检查并插入了请求记录
-        log.info("请求ID {} 处理完成，最终状态: {}", snowId, finalRequestStatus == 1 ? "自动通过" : "审核中");
+        // **5. 如果是自动通过，创建订单和订单明细项**
+        // 这个逻辑必须在处理完所有器材项的可用性检查和库存更新之后执行
+        if (finalRequestStatus == 1) {
+            long OrderSnowId = snowflakeIdGenerator.nextId();
+            log.info("请求ID {} 自动通过，开始创建订单...", OrderSnowId);
+
+            // 5.1. 创建订单主表实体
+            Order order = new Order();
+            order.setUserId(userId);
+            order.setRequestId(OrderSnowId); // 关联到原始请求ID
+            order.setRequestStartTime(borrowRequestDTO.getStartTime());
+            order.setRequestEndTime(borrowRequestDTO.getEndTime());
+            order.setCreateTime(now);
+            order.setTotalAmount(BigDecimal.valueOf(totalAmount)); // 使用累加的总金额
+            // 订单状态设置为“待支付”或“已借出”，取决于您的业务流程
+            // 如果借用需要先支付，状态为待支付
+//            order.setOrderStatusId(OrderStatusConstant.PENDING_PAYMENT.getId()); // 假设 PENDING_PAYMENT 的ID是X
+            // 如果借用是免费的或后付费，可以直接设置为“已借出”
+            // order.setStatus(OrderStatusConstant.BORROWED.getId()); // 假设 BORROWED 的ID是Y
+
+            // 5.2. 插入订单主表并获取生成的订单ID
+            orderMapper.insert(order);
+            Long orderId = order.getOrderId(); // 假设 insertOrder 会回填生成的ID
+
+            log.info("请求ID {} 自动通过，成功创建订单，订单ID: {}", snowId, orderId);
+
+            // 5.3. 插入订单明细项
+            for (OrderItem orderItem : orderItemsToInsert) {
+                orderItem.setOrderId(orderId); // 设置关联的订单ID
+                orderItemMapper.insert(orderItem);
+                log.info("为订单ID {} 插入明细项，器材ID: {}", orderId, orderItem.getEquipmentId());
+            }
+
+            // 5.4. (可选) 更新原始请求记录状态
+            // 如果您选择在自动通过时也插入 EquipmentBorrowRequest 记录 (状态1)，
+            // 可以在这里更新其状态到“已转订单”并关联 orderId。
+            // 如果自动通过不插入 EquipmentBorrowRequest 记录，则忽略此步。
+        }
+
+        // 整个请求处理完成，如果走到这里说明所有器材都通过了可用性检查并插入了请求记录/创建了订单
+        log.info("请求ID {} 处理完成，最终状态: {}", snowId, finalRequestStatus == 1 ? "自动通过并生成订单" : "审核中");
     }
+
+
+
+
 
     /**
      * 用户撤销未审核

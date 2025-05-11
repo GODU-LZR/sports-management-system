@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.equipment.mapper.EquipmentOrderItemMapper"> <!-- 这里的 namespace 必须是你的 Mapper 接口的全限定名 -->
+
+    <!-- 定义与接口方法 updateStatusByIdXml 对应的 SQL -->
+    <!-- id 必须与接口中的方法名一致 -->
+<!--    <update id="updateStatusByIdXml">-->
+<!--        UPDATE order_item-->
+<!--        SET status = #{status}-->
+<!--        WHERE id = #{id}-->
+<!--    </update>-->
+
+    <!-- 你也可以在这里覆盖或补充 BaseMapper 的方法，但不常用 -->
+    <!-- 例如，如果你想自定义 selectById 的 SQL -->
+    <!-- <select id="selectById" resultType="com.example.entity.OrderItem">
+         SELECT * FROM order_item WHERE id = #{id} AND is_deleted = 0
+    </select> -->
+
+</mapper>

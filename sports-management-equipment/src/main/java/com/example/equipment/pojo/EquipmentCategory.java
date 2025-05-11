@@ -18,7 +18,7 @@ public class EquipmentCategory {
 
     private String description;  //分类描述
 
-    private float value;   //该类器材的借用 价格  1小时
+    private float value;   //该类器材的借用 价格 半小时
 
     private  Integer total;    //总数
 
