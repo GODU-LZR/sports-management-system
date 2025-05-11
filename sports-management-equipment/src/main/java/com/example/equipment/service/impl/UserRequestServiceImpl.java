@@ -225,7 +225,7 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
 //                    orderItem.setUnitPrice((double) hourlyPrice); // 存储每小时单价 (或者根据业务需要存储计算后的总价/数量)
                     orderItem.setItemAmount(BigDecimal.valueOf(itemCost)); // 存储单个器材的总费用
                     // 设置明细项初始状态为“待借出” (使用 OrderEquipmentStatusConstant)
-                    orderItem.setItemStatusId(OrderEquipmentStatusConstant.PENDING_BORROW.getId()); // 假设 PENDING_BORROW 的ID是1
+                    orderItem.setItemStatusId(OrderEquipmentStatusConstant.UNUSED.getId()); // 的ID是1
                     // 可以选择性地关联到原始请求ID，如果 EquipmentBorrowRequest 记录也被创建了
                     // orderItem.setRequestId(snowId);
 
@@ -264,7 +264,7 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
             order.setTotalAmount(BigDecimal.valueOf(totalAmount)); // 使用累加的总金额
             // 订单状态设置为“待支付”或“已借出”，取决于您的业务流程
             // 如果借用需要先支付，状态为待支付
-            order.setOrderStatusId(OrderStatusConstant.PENDING_PAYMENT.getId()); // 假设 PENDING_PAYMENT 的ID是X
+//            order.setOrderStatusId(OrderStatusConstant.PENDING_PAYMENT.getId()); // 假设 PENDING_PAYMENT 的ID是X
             // 如果借用是免费的或后付费，可以直接设置为“已借出”
             // order.setStatus(OrderStatusConstant.BORROWED.getId()); // 假设 BORROWED 的ID是Y
 
@@ -290,6 +290,9 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
         // 整个请求处理完成，如果走到这里说明所有器材都通过了可用性检查并插入了请求记录/创建了订单
         log.info("请求ID {} 处理完成，最终状态: {}", snowId, finalRequestStatus == 1 ? "自动通过并生成订单" : "审核中");
     }
+
+
+
 
 
     /**

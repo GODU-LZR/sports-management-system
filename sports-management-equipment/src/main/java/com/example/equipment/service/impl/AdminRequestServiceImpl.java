@@ -57,8 +57,8 @@ public class AdminRequestServiceImpl implements AdminRequestService {
         //根据请求的Id查询所有的请求未审核的列表
         List<RequestVO> list1 = requestMapper.getStatus_0(requestDTO.getRequestId());
 
-        //对于需要归还的器材  根据Id查询已 审核通过的器材
-        List<RequestVO> list3 = requestMapper.getStatus_1(requestDTO.getRequestId());
+//        //对于需要归还的器材  根据Id查询已 审核通过的器材
+//        List<RequestVO> list3 = requestMapper.getStatus_1(requestDTO.getRequestId());
 
         if(status==1)
         {
@@ -86,19 +86,19 @@ public class AdminRequestServiceImpl implements AdminRequestService {
                 categoryMapper.raiseBookStock(requestVO.getEquipmentId());
             }
         }
-        //如果是归还
-        if(status == 3){
-
-            for(RequestVO request :list3)
-            {
-                log.info("归还的器材ID为:{}",request.getEquipmentId());
-                //对该器材的状态进行更新
-                equipmentMapper.setEquipment_Status_To_1(request.getEquipmentId());
-
-                //对器材分类的数量进行更新
-                categoryMapper.ReturnEqp(request.getEquipmentId());
-            }
-        }
+//        //如果是归还
+//        if(status == 3){
+//
+//            for(RequestVO request :list3)
+//            {
+//                log.info("归还的器材ID为:{}",request.getEquipmentId());
+//                //对该器材的状态进行更新
+//                equipmentMapper.setEquipment_Status_To_1(request.getEquipmentId());
+//
+//                //对器材分类的数量进行更新
+//                categoryMapper.ReturnEqp(request.getEquipmentId());
+//            }
+//        }
 
 //        根据传入的状态进行操作
         requestMapper.reviewRequest(requestDTO);

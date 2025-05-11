@@ -47,7 +47,6 @@ public class EquipmentServiceImpl  extends ServiceImpl<EquipmentMapper, Equipmen
     public void addEquipment(EquipmentDTO equipmentDTO, UserConstant user) {
 
         Equipment equipment = new Equipment();
-
         //拷贝属性
         BeanUtils.copyProperties(equipmentDTO,equipment);
 
