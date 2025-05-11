@@ -1,5 +1,6 @@
 package com.example.event.controller;
 
+import com.example.common.constant.UserConstant;
 import com.example.common.response.Result;
 import com.example.event.service.GameService;
 import lombok.RequiredArgsConstructor;
@@ -48,16 +49,18 @@ public class GameController {
     /**
      * 获取我的赛事基本信息数据
      *
-     * @param page 页码
+     * @param page         页码
      * @param reviewStatus 审核状态
      * @return 我的赛事列表
      */
     @GetMapping("/my/competition")
     public Result<List<Map<String, Object>>> getMyCompetitionData(
             @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(required = false) Integer reviewStatus) {
+            @RequestParam(required = false) Integer reviewStatus,
+            @RequestParam UserConstant userconst
+    ) {
         // 这里假设从当前登录用户中获取userId，实际项目中应该从安全上下文中获取
-        Long userId = 1L; // 模拟当前登录用户ID
+        Long userId = userconst.getUserId(); // 模拟当前登录用户ID
         List<Map<String, Object>> competitionData = gameService.getMyCompetitionData(page, reviewStatus, userId);
         return Result.success("获取我的赛事列表成功", competitionData);
     }
@@ -69,10 +72,12 @@ public class GameController {
      * @return 总条数
      */
     @GetMapping("/my/competition/count")
-    public Result<Integer> getMyCompetitionCount(@RequestParam(required = false) Integer reviewStatus) {
+    public Result<Integer> getMyCompetitionCount(
+            @RequestParam(required = false) Integer reviewStatus,
+            @RequestParam(required = false) UserConstant userConstant) {
         // 这里假设从当前登录用户中获取userId，实际项目中应该从安全上下文中获取
-        Long userId = 1L; // 模拟当前登录用户ID
-        Integer count = gameService.getMyCompetitionCount(reviewStatus, userId);
+
+        Integer count = gameService.getMyCompetitionCount(reviewStatus, userConstant.getUserId());
         return Result.success(count);
     }
 
@@ -83,9 +88,11 @@ public class GameController {
      * @return 赛事基本信息
      */
     @GetMapping("/my/game/{gameId}")
-    public Result<Map<String, Object>> getMyGameData(@PathVariable Integer gameId) {
+    public Result<Map<String, Object>> getMyGameData(
+            @PathVariable Integer gameId,
+            @RequestParam UserConstant userConstant) {
         // 这里假设从当前登录用户中获取userId，实际项目中应该从安全上下文中获取
-        Long userId = 1L; // 模拟当前登录用户ID
+        Long userId = userConstant.getUserId(); // 模拟当前登录用户ID
         Map<String, Object> gameData = gameService.getMyGameData(gameId.longValue(), userId);
         return Result.success("获取我的赛事基本信息成功", gameData);
     }
@@ -97,9 +104,11 @@ public class GameController {
      * @return 比赛列表
      */
     @GetMapping("/my/game/matches/{gameId}")
-    public Result<List<Map<String, Object>>> getMyMatches(@PathVariable Integer gameId) {
+    public Result<List<Map<String, Object>>> getMyMatches(
+            @PathVariable Integer gameId,
+            @RequestParam UserConstant userConstant) {
         // 这里假设从当前登录用户中获取userId，实际项目中应该从安全上下文中获取
-        Long userId = 1L; // 模拟当前登录用户ID
+        Long userId = userConstant.getUserId(); // 模拟当前登录用户ID
         List<Map<String, Object>> matches = gameService.getMyMatches(gameId.longValue(), userId);
         return Result.success("获取我的赛事比赛列表成功", matches);
     }
@@ -111,7 +120,9 @@ public class GameController {
      * @return 操作结果
      */
     @PutMapping("/my/game")
-    public Result<String> updateGameData(@RequestBody Map<String, Object> form) {
+    public Result<String> updateGameData(
+            @RequestBody Map<String, Object> form,
+            @RequestParam UserConstant userConstant) {
         try {
             // 这里假设从当前登录用户中获取userId，实际项目中应该从安全上下文中获取
             Long userId = 1L; // 模拟当前登录用户ID
@@ -137,7 +148,8 @@ public class GameController {
      * @return 裁判选项列表
      */
     @GetMapping("/referee/options")
-    public Result<List<Map<String, Object>>> getRefereeOptions(@RequestParam(required = false) String referee) {
+    public Result<List<Map<String, Object>>> getRefereeOptions(
+            @RequestParam(required = false) String referee) {
         // 假设有一个获取裁判选项的方法
         List<Map<String, Object>> options = new ArrayList<>();
         // 模拟数据

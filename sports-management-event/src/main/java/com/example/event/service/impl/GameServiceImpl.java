@@ -42,18 +42,16 @@ public class GameServiceImpl implements GameService {
         
         return convertGameToMap(game);
     }
-    
+
     @Override
     public List<Map<String, Object>> getMatches(Long gameId) {
-        LambdaQueryWrapper<Match> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Match::getGameId, gameId);
-        List<Match> matches = matchMapper.selectList(queryWrapper);
-        
+        // Using a custom SQL query with backticks to escape the reserved keyword 'match'
+        List<Match> matches = matchMapper.findByGameId(gameId);
+
         return matches.stream()
                 .map(this::convertMatchToMap)
                 .collect(Collectors.toList());
     }
-    
     @Override
     public List<Map<String, Object>> getMyCompetitionData(Integer page, Integer reviewStatus, Long userId) {
         Page<Game> pageParam = new Page<>(page, 10); // 每页10条数据

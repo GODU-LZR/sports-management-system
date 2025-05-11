@@ -53,4 +53,10 @@ public interface MatchMapper extends BaseMapper<Match> {
     @Select("SELECT m.* FROM match m JOIN game g ON m.game_id = g.game_id " +
            "WHERE m.game_id = #{gameId} AND g.creator_id = #{userId} ORDER BY m.start_time")
     List<Match> getMyMatchesByGameId(@Param("gameId") Long gameId, @Param("userId") Long userId);
+
+    @Select("SELECT match_id, game_id, sport, away_team, home_team, away_team_score, home_team_score, " +
+            "venue_name, start_time, end_time, phase, winner, responsible_person, phone, note, referee_name " +
+            "FROM `match` " +  // Note the backticks around 'match'
+            "WHERE game_id = #{gameId}")
+    List<Match> findByGameId(@Param("gameId") Long gameId);
 }
