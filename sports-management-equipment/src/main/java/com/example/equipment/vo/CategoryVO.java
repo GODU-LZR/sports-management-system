@@ -23,5 +23,7 @@ public class CategoryVO {
 
     private  Integer stock;    //库存
 
+    private Integer bookStock;
+
 
 }
