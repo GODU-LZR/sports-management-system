@@ -42,4 +42,6 @@ public class EquipmentVO {
 
     private LocalDateTime modifiedTime;   //修改时间
 
+    private Integer conditionScore;    //器材的完好程度(0-100)
+
 }
