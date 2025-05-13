@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class UserOperateEquipmentDTO {
 
-
     private LocalDateTime now;
 
     private String operation;  //领取或是归还

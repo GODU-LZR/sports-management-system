@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 @Service
 public class TakeEquipmentServiceImpl implements TakeEquipmentService {
 
+
     @Autowired
     CategoryMapper categoryMapper;
     @Autowired
@@ -57,6 +58,7 @@ public class TakeEquipmentServiceImpl implements TakeEquipmentService {
 
 //               //出库接口
 //               categoryMapper.BorrowEqp(takeEquipmentDTO.getEquipmentId());
+
             } else if (equipmentId!=null && operation.equals("归还")) {
                 //进行归还操作
 //                将器材订单表里面的状态设置为 等待领取

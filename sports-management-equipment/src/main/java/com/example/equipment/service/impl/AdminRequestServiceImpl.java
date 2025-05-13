@@ -79,6 +79,7 @@ public class AdminRequestServiceImpl implements AdminRequestService {
 
             //依旧是对未审核的请求进行操作
             for(RequestVO requestVO : list1){
+
                 /**
                  * 尽管不需要对器材的状态等信息修改
                  * 但是依旧需要对器材的账面库存修改
