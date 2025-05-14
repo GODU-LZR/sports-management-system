@@ -113,6 +113,7 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
         // 遍历所有请求的器材，检查是否存在数量超过阈值的项
         boolean overallNeedsManualReview = false;
         for (BorrowEquipment item : borrowEquipmentList) {
+
             // 检查数量是否大于0
             Integer requestedQuantity = item.getQuantity();
             if (requestedQuantity == null || requestedQuantity <= 0) {
@@ -125,6 +126,7 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
                 // 找到一个超阈值的就可以确定需要手动审核了，可以提前跳出循环
                 break;
             }
+
         }
 
         // **3. 根据是否需要手动审核确定整个请求的最终状态**
@@ -150,6 +152,11 @@ public class UserRequestServiceImpl extends ServiceImpl<RequestMapper, RequestVO
             // 如果器材分类不存在
             if (equipmentCategory == null) {
                 throw new IllegalArgumentException("器材分类 '" + item.getName() + "' 不存在");
+            }
+
+            if(equipmentCategory.getBookStock()<item.getQuantity())
+            {
+                throw new IllegalArgumentException("器材数量不足，无法租借");
             }
 
             // 获取该分类的每小时价格

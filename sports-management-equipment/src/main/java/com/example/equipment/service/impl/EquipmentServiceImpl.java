@@ -12,6 +12,7 @@ import com.example.equipment.dto.utilDTO.EquipmentPageQuery;
 import com.example.equipment.mapper.CategoryMapper;
 import com.example.equipment.mapper.EquipmentMapper;
 import com.example.equipment.pojo.Equipment;
+import com.example.equipment.pojo.JudgeDamage;
 import com.example.equipment.service.EquipmentService;
 import com.example.equipment.vo.EquipmentVO;
 import lombok.extern.slf4j.Slf4j;
@@ -127,6 +128,13 @@ public class EquipmentServiceImpl  extends ServiceImpl<EquipmentMapper, Equipmen
 
         log.info("Service层分页查询结果:{}", resultPage.getRecords().size()); // 记录查询到的条数
         return resultPage;
+    }
+
+    @Override
+    public void UpdateEquipmentDamage(JudgeDamage judgeDamage) {
+
+        equipmentMapper.updateEquipmentCondition(judgeDamage);
+
     }
 
 }

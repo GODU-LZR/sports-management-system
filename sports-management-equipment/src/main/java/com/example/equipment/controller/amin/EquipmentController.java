@@ -6,6 +6,7 @@ import com.example.common.constant.UserConstant;
 import com.example.common.response.Result;
 import com.example.equipment.dto.EquipmentDTO;
 import com.example.equipment.dto.utilDTO.EquipmentPageQuery;
+import com.example.equipment.pojo.JudgeDamage;
 import com.example.equipment.service.impl.EquipmentServiceImpl;
 import com.example.equipment.vo.EquipmentVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -82,6 +83,15 @@ public class EquipmentController {
     public Result deleteEquipment(@PathVariable Long equipmentid,@Parameter(hidden = true) UserConstant currentUser){
 
         equipmentService.deleteEquipment(equipmentid,currentUser);
+
+        return Result.success();
+    }
+
+    @PutMapping("/judgeDamage")
+    public Result judgeEquipmentDamage(@RequestBody JudgeDamage judgeDamage)
+    {
+
+        equipmentService.UpdateEquipmentDamage(judgeDamage);
 
         return Result.success();
     }

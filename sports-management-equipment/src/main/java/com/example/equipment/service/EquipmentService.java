@@ -5,6 +5,7 @@ import com.example.common.constant.UserConstant;
 import com.example.common.response.Result;
 import com.example.equipment.dto.EquipmentDTO;
 import com.example.equipment.dto.utilDTO.EquipmentPageQuery;
+import com.example.equipment.pojo.JudgeDamage;
 import com.example.equipment.vo.EquipmentVO;
 
 public interface EquipmentService {
@@ -15,4 +16,6 @@ public interface EquipmentService {
     void deleteEquipment(Long equipmentId,UserConstant userConstant);
 
     IPage<EquipmentVO> PageSelect(EquipmentPageQuery query);
+
+    void UpdateEquipmentDamage(JudgeDamage judgeDamage);
 }
