@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class EquipmentDTO {
 
+    private Long equipmentId;
+
     private Long categoryId;  //器材分类ID
 
     private String name;    //器材分类的名称

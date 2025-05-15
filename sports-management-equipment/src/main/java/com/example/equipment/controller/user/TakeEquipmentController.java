@@ -56,7 +56,7 @@ public class TakeEquipmentController {
         return Result.success();
     }
 
-    @PutMapping("localeBorrowEquipment")
+    @PutMapping("/localeBorrowEquipment")
     public Result localeOutboundEquipment(@RequestBody LocaleBorrowDTO borrowDTO,@Parameter(hidden = true) UserConstant currentUser)
     {
 
@@ -67,7 +67,6 @@ public class TakeEquipmentController {
         {
             return Result.error(e.getMessage());
         }
-
 
         return Result.success();
     }

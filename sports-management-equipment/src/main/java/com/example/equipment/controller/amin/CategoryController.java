@@ -34,7 +34,7 @@ public class CategoryController {
     }
 
     /**
-     * 查询所有的器材
+     * 查询所有的器材分类
      * @return
      */
     @GetMapping("/selectAll")

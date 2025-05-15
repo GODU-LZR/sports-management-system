@@ -117,4 +117,11 @@ public interface EquipmentMapper extends BaseMapper<Equipment> {
     void updateEquipmentCondition(JudgeDamage judgeDamage);
 
 
+    /**
+     * 根据器材ID获取器材的图片URL
+     * @param equipmentId 器材ID
+     * @return 图片URL字符串
+     */
+    @Select("select picture_url from equipment where equipment_id = #{equipmentId} and is_deleted = 0")
+    String getPictureUrlById(Long equipmentId);
 }
