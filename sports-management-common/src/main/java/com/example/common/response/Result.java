@@ -28,6 +28,15 @@ public class Result<T> implements Serializable {
                 .setData(data);
     }
 
+    public static <T> Result<T> success(String message, T data) {
+        Result<T> result = new Result<>();
+        result.setCode(ResultCode.SUCCESS.getCode()); // 使用枚举统一定义成功码
+        result.setMessage(message);
+        result.setData(data);
+        return result;
+    }
+
+
     // --- 失败的静态方法 ---
 
     /**
@@ -53,36 +62,39 @@ public class Result<T> implements Serializable {
     }
 
     /**
-     * 【新增】返回错误结果，使用指定的 code 和 message
-     * 这个方法就是为了解决 "无法解析方法 'error(java.lang.Integer, java.lang.String)'" 的问题
+     * 返回错误结果，使用指定的 code 和 message
      * @param code 自定义错误码 (Integer 类型)
      * @param message 自定义错误消息 (String 类型)
      * @return Result<T>
      */
     public static <T> Result<T> error(Integer code, String message) {
-        // 参数校验 (可选，但推荐)
         if (code == null) {
-            // 如果 code 为 null，可以抛出异常或使用默认错误码
-            // throw new IllegalArgumentException("错误码不能为空");
-            code = ResultCode.ERROR.getCode(); // 或者使用默认错误码
-            // message = "错误码未指定，原始消息：" + message; // 可以选择修改消息
+            code = ResultCode.ERROR.getCode();
         }
         if (message == null) {
-            message = "未提供具体的错误消息"; // 提供默认消息
+            message = "未提供具体的错误消息";
         }
 
         return new Result<T>()
-                .setCode(code) // 设置传入的 code
-                .setMessage(message); // 设置传入的 message
+                .setCode(code)
+                .setMessage(message);
     }
 
-    public static <T> Result<T> success(String message, T data) {
+    /**
+     * 【新增】返回错误结果，使用默认错误码、自定义消息和数据
+     * @param message 自定义错误消息
+     * @param data 需要返回的数据 (例如包含 relative 标志的 AssessDamageResult)
+     * @return Result<T>
+     */
+    public static <T> Result<T> error(String message, T data) {
         Result<T> result = new Result<>();
-        result.setCode(200);
+        result.setCode(ResultCode.ERROR.getCode()); // 使用默认错误码
         result.setMessage(message);
-        result.setData(data);
+        result.setData(data); // 设置数据
         return result;
     }
+
+
     @Override
     public String toString() {
         try {
