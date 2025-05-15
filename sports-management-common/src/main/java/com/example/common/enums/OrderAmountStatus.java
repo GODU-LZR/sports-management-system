@@ -3,7 +3,7 @@ import com.baomidou.mybatisplus.annotation.IEnum;
 import lombok.Getter;
 
 @Getter
-public enum OrderAmountStatus implements IEnum<String>{
+public enum OrderAmountStatus implements IEnum<Integer>{
     // --- 支付相关 ---
     PENDING_PAYMENT(10, "待支付"),         // 订单已创建，等待用户支付
     PAYMENT_INITIATED(20, "支付已发起"),    // 用户点击支付按钮后
@@ -86,7 +86,7 @@ public enum OrderAmountStatus implements IEnum<String>{
     }
 
     @Override
-    public String getValue() {
-        return description;
+    public Integer getValue() {
+        return code;
     }
 }

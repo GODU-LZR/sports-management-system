@@ -33,7 +33,7 @@ public class RedisDistributedLockImpl implements DistributedLock {
     SnowflakeIdGenerator snowflakeIdGenerator;
     private static final String RELEASE_LOCK_LUA_SCRIPT_STRING=
             "if redis.call('get',KEYS[1]) == ARGV[1] then " +
-                    " return redis.call('del',KEY[1]) " +
+                    " return redis.call('del',KEYS[1]) " +
                     "else " +
                     " return 0 " +
                     "end";
@@ -101,14 +101,14 @@ public class RedisDistributedLockImpl implements DistributedLock {
     @Override
     public boolean release(LockHandle handle) {
         if(!(handle instanceof RedisLockHandle)){
-            log.warn("Attempted to release a non-RedisLockHandle: {}", handle);
+            log.warn("尝试释放的是一个非redis的锁: {}", handle);
             return false;
         }
         RedisLockHandle redisLockHandle=(RedisLockHandle) handle;
         String resourceKey=redisLockHandle.getResourceKey();
         String uniqueValue=redisLockHandle.getUniqueValue();
         if (resourceKey == null || uniqueValue == null) {
-            log.warn("Invalid RedisLockHandle data: resourceKey={}, uniqueValue={}", resourceKey, uniqueValue);
+            log.warn("非法数据: resourceKey={}, uniqueValue={}", resourceKey, uniqueValue);
             return false;
         }
         try {
@@ -129,12 +129,12 @@ public class RedisDistributedLockImpl implements DistributedLock {
 
         } catch (DataAccessException e) {
             // Redis 操作异常
-            log.error("Redis DataAccessException during lock release for resource: {}", resourceKey, e);
+            log.error("redis连接数据异常: {}", resourceKey, e);
             // 释放失败通常是严重问题，需要关注
             return false;
         } catch (Exception e) {
             // 其他未知异常
-            log.error("Unexpected error during lock release for resource: {}", resourceKey, e);
+            log.error("未知错误: {}", resourceKey, e);
             return false;
         }
     }

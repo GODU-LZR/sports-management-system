@@ -1,6 +1,7 @@
 package com.example.equipment.mapper;
 
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.equipment.pojo.EquipmentCategory;
 import com.example.equipment.vo.CategoryVO;
 import org.apache.ibatis.annotations.Insert;
@@ -31,6 +32,7 @@ public interface CategoryMapper {
 
     /**
      * 更新器材分类
+     *
      * @param
      */
     @Update("update equipment_category set name = #{name}," +
@@ -45,6 +47,7 @@ public interface CategoryMapper {
     /**
      * 租借器材
      * 通过器材Id 从器材表里 查询对应的器材分类Id 再对物理库存操作数量
+     *
      * @param equipmentId
      */
     @Update("update equipment_category ec " +
@@ -52,7 +55,6 @@ public interface CategoryMapper {
             " where ec.category_id = " +
             "(select category_id from equipment where equipment_id = #{equipmentId})")
     void BorrowEqp(Long equipmentId);
-
 
 
     @Update("update equipment_category ec set ec.stock = stock +1 ,ec.book_stock = book_stock +1 where ec.category_id = (select  category_id from equipment where equipment_id = #{equipmentId})")
@@ -71,4 +73,18 @@ public interface CategoryMapper {
 
 //    @Update("update equipment_category ec set ec.total = ec.stock - 1 ,ec.stock = ec.stock - 1")
 //    void reduceEquipment(Long equipmentId);
+
+    /*代码责任切割*/
+//    查询账面库存 (book_stock)
+    @Select("SELECT book_stock FROM equipment_category WHERE category_id = #{categoryId}")
+    Integer getBookStockByCategoryId(Long categoryId);
+
+    //    查询当前库存 (stock)
+    @Select("SELECT stock FROM equipment_category WHERE category_id = #{categoryId}")
+    Integer getStockByCategoryId(Long categoryId);
+
+    //将器材分类表里的账面库存减一
+    @Update("update equipment_category ec set ec.book_stock = ec.book_stock - #{nums} where ec.category_id = (select category_id from equipment where equipment_id = #{equipmenntId})")
+    void reduceBookStockWithNums(Long equipmentId,int nums);
+
 }
