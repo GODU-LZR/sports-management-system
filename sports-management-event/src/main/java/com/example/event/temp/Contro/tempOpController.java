@@ -64,7 +64,7 @@ public class tempOpController {
     public Result<?> getRefereeOptionsByKeyword() {
 
         List<GameRoleRecord> gameRoleList = gameRoleRecordMapper.selectList(new QueryWrapper<GameRoleRecord>()
-                .eq("role", GameRole.REFEREE.getCode())); // 使用枚举的 getCode()
+                .eq("role", GameRole.REFEREE)); // 使用枚举的 getCode()
         return Result.success(gameRoleList);
 
     }
