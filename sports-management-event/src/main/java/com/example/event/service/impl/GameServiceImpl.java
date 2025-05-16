@@ -260,10 +260,7 @@ public class GameServiceImpl implements GameService {
                 match.getEndTime().format(DATE_TIME_FORMATTER) : null);
         result.put("phase", match.getPhase());
         result.put("winner", match.getWinner());
-        result.put("responsiblePerson", match.getResponsiblePerson());
-        result.put("phone", match.getPhone());
         result.put("note", match.getNote());
-        result.put("refereeName", match.getRefereeName());
         return result;
     }
 }

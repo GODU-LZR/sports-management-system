@@ -68,7 +68,7 @@ public class EqOrderService {
 
     private boolean performInventoryReduction(Long categoryId, int quantity) {
 
-        categoryMapper.reduceBookStockWithNums(categoryId, quantity);
+//        categoryMapper.reduceBookStockWithNums(categoryId, quantity);
 
         return true;
 
