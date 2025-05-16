@@ -3,7 +3,7 @@ package com.example.event.Enum;
 import com.baomidou.mybatisplus.annotation.EnumValue; // 1. 导入 @EnumValue 注解
 import com.baomidou.mybatisplus.annotation.IEnum;
 
-public enum GameRole implements IEnum<String> { // IEnum<String> 及其 getValue() 仍可用于其他目的
+public enum GameRole implements IEnum<Integer> { // IEnum<String> 及其 getValue() 仍可用于其他目的
     PLAYER(1, "球员", true, false),
     COACH(2, "教练", true, true),
     REFEREE(3, "裁判", false, true),
@@ -52,9 +52,7 @@ public enum GameRole implements IEnum<String> { // IEnum<String> 及其 getValue
     }
 
     @Override
-    public String getValue() {
-        // 当 GameRole 类型的字段被持久化时，@EnumValue 会优先于 IEnum<String> 的 getValue()
-        // 此 getValue() 仍然可以用于其他需要获取 description 的场景
-        return description;
+    public Integer getValue() {
+        return code; // 必须返回 Integer 类型
     }
 }
