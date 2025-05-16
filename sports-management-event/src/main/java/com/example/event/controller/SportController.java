@@ -55,6 +55,9 @@ public class SportController {
             @PathVariable Integer sportId,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(required = false) Map<String, Object> filter) {
+        for(Map.Entry<String,Object>entry:filter.entrySet()){
+            System.out.println("Key: " + entry.getKey() + ", Value: " + entry.getValue());
+        }
         Map<String, Object> competitionData = sportService.getCompetitionData(sportId, page, filter);
         return Result.success(competitionData);
     }
@@ -63,11 +66,14 @@ public class SportController {
      * 获取赛事列表的总条数
      *
      * @param sportId 赛事项目id
+     * @param filter 过滤条件
      * @return 总条数
      */
     @GetMapping("/competition/count/{sportId}")
-    public Result<Integer> getCompetitionPage(@PathVariable Integer sportId) {
-        Integer count = sportService.getCompetitionCount(sportId);
+    public Result<Integer> getCompetitionPage(
+            @PathVariable Integer sportId,
+            @RequestParam(required = false) Map<String, Object> filter) {
+        Integer count = sportService.getCompetitionCount(sportId, filter);
         return Result.success(count);
     }
 }

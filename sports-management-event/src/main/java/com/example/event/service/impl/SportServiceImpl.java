@@ -33,6 +33,10 @@ public class SportServiceImpl implements SportService {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /**
+     * 获取带赛事列表的体育项目数据
+     * @return 体育项目VO列表，每个项目包含其关联的赛事列表
+     */
     @Override
     public List<SportVO> getSportWithGames() {
         // 获取带赛事的体育项目数据
@@ -69,6 +73,10 @@ public class SportServiceImpl implements SportService {
         return new ArrayList<>(sportMap.values());
     }
 
+    /**
+     * 获取不带赛事列表的体育项目数据
+     * @return 体育项目VO列表
+     */
     @Override
     public List<SportVO> getSportList() {
         // 获取不带赛事列表的体育项目数据
@@ -82,6 +90,13 @@ public class SportServiceImpl implements SportService {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * 获取赛事分页数据
+     * @param sportId 体育项目ID
+     * @param page 页码
+     * @param filter 过滤条件(name:赛事名称, state:赛事状态, registerTime:报名时间, time:比赛时间)
+     * @return 包含分页信息的Map(records:赛事列表, total:总数, pages:总页数, current:当前页)
+     */
     @Override
     public Map<String, Object> getCompetitionData(Integer sportId, Integer page, Map<String, Object> filter) {
         // 处理过滤条件
@@ -130,9 +145,11 @@ public class SportServiceImpl implements SportService {
     }
 
     @Override
-    public Integer getCompetitionCount(Integer sportId) {
+    public Integer getCompetitionCount(Integer sportId, Map<String, Object> filter) {
         return gameMapper.getCompetitionCount(sportId.longValue());
     }
+
+
 
     /**
      * 将Game实体转换为Map

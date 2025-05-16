@@ -8,7 +8,7 @@ import lombok.Getter;
  * 用于区分不同业务类型的订单
  */
 @Getter
-public enum OrderType implements IEnum<String> {
+public enum OrderType implements IEnum<Integer> {
     
     VENUE_RENTAL(1, "场地租借"),
     EQUIPMENT_RENTAL(2, "器材租借"),
@@ -39,7 +39,7 @@ public enum OrderType implements IEnum<String> {
     }
 
     @Override
-    public String getValue() {
-        return description;
+    public Integer getValue() {
+        return code;
     }
 }

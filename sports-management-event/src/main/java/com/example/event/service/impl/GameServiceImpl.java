@@ -33,6 +33,11 @@ public class GameServiceImpl implements GameService {
     
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     
+    /**
+     * 根据赛事ID获取赛事数据
+     * @param gameId 赛事ID
+     * @return 赛事数据Map，包含赛事所有基本信息，若赛事不存在则返回null
+     */
     @Override
     public Map<String, Object> getGameData(Long gameId) {
         Game game = gameMapper.selectById(gameId);
@@ -43,15 +48,27 @@ public class GameServiceImpl implements GameService {
         return convertGameToMap(game);
     }
 
+    /**
+     * 获取指定赛事下的所有比赛列表
+     * @param gameId 赛事ID
+     * @return 比赛列表，每个比赛被转换为Map格式
+     */
     @Override
     public List<Map<String, Object>> getMatches(Long gameId) {
-        // Using a custom SQL query with backticks to escape the reserved keyword 'match'
+        // 使用自定义SQL查询(使用反引号转义关键字'match')
         List<Match> matches = matchMapper.findByGameId(gameId);
 
         return matches.stream()
                 .map(this::convertMatchToMap)
                 .collect(Collectors.toList());
     }
+    /**
+     * 分页获取用户创建的赛事数据
+     * @param page 页码
+     * @param reviewStatus 审核状态(可选)
+     * @param userId 用户ID
+     * @return 赛事数据列表，每页10条
+     */
     @Override
     public List<Map<String, Object>> getMyCompetitionData(Integer page, Integer reviewStatus, Long userId) {
         Page<Game> pageParam = new Page<>(page, 10); // 每页10条数据
@@ -62,11 +79,23 @@ public class GameServiceImpl implements GameService {
                 .collect(Collectors.toList());
     }
     
+    /**
+     * 获取用户创建的赛事数量
+     * @param reviewStatus 审核状态(可选)
+     * @param userId 用户ID
+     * @return 赛事数量
+     */
     @Override
     public Integer getMyCompetitionCount(Integer reviewStatus, Long userId) {
         return gameMapper.getMyCompetitionCount(userId, reviewStatus);
     }
     
+    /**
+     * 获取用户创建的指定赛事数据(需验证用户权限)
+     * @param gameId 赛事ID
+     * @param userId 用户ID
+     * @return 赛事数据Map，若赛事不存在或用户无权限则返回null
+     */
     @Override
     public Map<String, Object> getMyGameData(Long gameId, Long userId) {
         Game game = gameMapper.selectById(gameId);
@@ -77,6 +106,12 @@ public class GameServiceImpl implements GameService {
         return convertGameToMap(game);
     }
     
+    /**
+     * 获取用户创建的指定赛事下的比赛列表(需验证用户权限)
+     * @param gameId 赛事ID
+     * @param userId 用户ID
+     * @return 比赛列表，若赛事不存在或用户无权限则返回空列表
+     */
     @Override
     public List<Map<String, Object>> getMyMatches(Long gameId, Long userId) {
         // 先验证赛事是否属于该用户
@@ -95,6 +130,16 @@ public class GameServiceImpl implements GameService {
                 .collect(Collectors.toList());
     }
     
+    /**
+     * 分页获取赛事数据(带过滤条件)
+     * @param page 页码
+     * @param sportId 体育项目ID
+     * @param name 赛事名称(模糊查询)
+     * @param state 赛事状态
+     * @param registerTime 报名时间
+     * @param time 比赛时间
+     * @return 分页赛事数据，每页10条
+     */
     @Override
     public IPage<Game> getCompetitionData(Integer page, Long sportId, String name, String state, 
                                          LocalDateTime registerTime, LocalDateTime time) {
@@ -102,6 +147,11 @@ public class GameServiceImpl implements GameService {
         return gameMapper.getCompetitionData(pageParam, sportId, name, state, registerTime, time);
     }
     
+    /**
+     * 获取指定体育项目下的赛事数量
+     * @param sportId 体育项目ID
+     * @return 赛事数量
+     */
     @Override
     public int getCompetitionCount(Long sportId) {
         return gameMapper.getCompetitionCount(sportId);

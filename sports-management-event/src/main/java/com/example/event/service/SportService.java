@@ -40,5 +40,5 @@ public interface SportService {
      * @param sportId 赛事项目id
      * @return 总条数
      */
-    Integer getCompetitionCount(Integer sportId);
+    Integer getCompetitionCount(Integer sportId,Map<String, Object> filter);
 }
