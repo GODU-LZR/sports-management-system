@@ -1,6 +1,5 @@
 package com.example.equipment.mapper;
 
-
 import com.example.equipment.pojo.EquipmentCategory;
 import com.example.equipment.vo.CategoryVO;
 import org.apache.ibatis.annotations.Insert;
@@ -12,7 +11,6 @@ import java.util.List;
 
 @Mapper
 public interface CategoryMapper {
-
 
     /**
      * 插入一条器材分类的数据
@@ -43,7 +41,7 @@ public interface CategoryMapper {
 
 
     /**
-     * 租借器材
+     * 租借器材时，将对应的器材分类库存数量减一 (物理库存)
      * 通过器材Id 从器材表里 查询对应的器材分类Id 再对物理库存操作数量
      * @param equipmentId
      */
@@ -54,8 +52,13 @@ public interface CategoryMapper {
     void BorrowEqp(Long equipmentId);
 
 
-
-    @Update("update equipment_category ec set ec.stock = stock +1 ,ec.book_stock = book_stock +1 where ec.category_id = (select  category_id from equipment where equipment_id = #{equipmentId})")
+    /**
+     * 归还器材时，将对应的器材分类库存数量加一 (物理库存)
+     * 通过器材Id 从器材表里 查询对应的器材分类Id 再对物理库存操作数量
+     * @param equipmentId
+     */
+    // ！！！修改了这里的SQL，只更新 stock，忽略 book_stock
+    @Update("update equipment_category ec set ec.stock = stock +1 where ec.category_id = (select  category_id from equipment where equipment_id = #{equipmentId})")
     void ReturnEqp(Long equipmentId);
 
     @Select("select * from equipment_category where name = #{name}")

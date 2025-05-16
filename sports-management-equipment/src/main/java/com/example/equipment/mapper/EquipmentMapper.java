@@ -124,4 +124,23 @@ public interface EquipmentMapper extends BaseMapper<Equipment> {
      */
     @Select("select picture_url from equipment where equipment_id = #{equipmentId} and is_deleted = 0")
     String getPictureUrlById(Long equipmentId);
+
+    /**
+     * 根据器材ID更新 modifiedId 和 modifiedTime
+     *
+     * @param equipmentId 器材ID
+     * @param modifiedId  新的 modifiedId (借出时为用户ID，归还时为 null)
+     */
+    @Update("update equipment set modified_id = #{modifiedId}, modified_time = now() where equipment_id = #{equipmentId}")
+    void updateEquipmentModifiedInfo(@Param("equipmentId") Long equipmentId, @Param("modifiedId") Long modifiedId);
+
+    /**
+     * 根据器材ID查询器材信息
+     * @param equipmentId
+     * @return
+     */
+    @Select("select * from equipment where equipment_id = #{equipmentId} and is_deleted = 0")
+    Equipment selectEquipmentById(Long equipmentId);
+
+
 }
