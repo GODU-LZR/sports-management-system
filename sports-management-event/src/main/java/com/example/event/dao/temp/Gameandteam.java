@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class Gameandteam {
     @TableId("id")
     Long id;
-    @TableId("game_id")
+    @TableField("game_id")
     Long game_id;
     @TableField("team_id")
     Long team_id;

@@ -1,4 +1,4 @@
-package com.example.event.mapper.temp;
+package com.example.event.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.event.dao.temp.Gameandteam;

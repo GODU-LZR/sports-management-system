@@ -9,7 +9,7 @@ import com.example.event.dao.GameRoleRecord;
 import com.example.event.dao.temp.Gameandteam;
 import com.example.event.mapper.GameRoleRecordMapper;
 import com.example.event.mapper.basketball.BasketballTeamMapper;
-import com.example.event.mapper.temp.GameandteamMapper;
+import com.example.event.mapper.GameandteamMapper;
 import com.example.event.service.SportService;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.Data;
@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable; // Added import
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam; // Added import
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections; // Added import
