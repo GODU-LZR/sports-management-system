@@ -1,7 +1,5 @@
 package com.example.equipment.mapper;
 
-
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.equipment.pojo.EquipmentCategory;
 import com.example.equipment.vo.CategoryVO;
 import org.apache.ibatis.annotations.Insert;
@@ -13,7 +11,6 @@ import java.util.List;
 
 @Mapper
 public interface CategoryMapper {
-
 
     /**
      * 插入一条器材分类的数据
@@ -32,7 +29,6 @@ public interface CategoryMapper {
 
     /**
      * 更新器材分类
-     *
      * @param
      */
     @Update("update equipment_category set name = #{name}," +
@@ -45,9 +41,8 @@ public interface CategoryMapper {
 
 
     /**
-     * 租借器材
+     * 租借器材时，将对应的器材分类库存数量减一 (物理库存)
      * 通过器材Id 从器材表里 查询对应的器材分类Id 再对物理库存操作数量
-     *
      * @param equipmentId
      */
     @Update("update equipment_category ec " +
@@ -57,7 +52,13 @@ public interface CategoryMapper {
     void BorrowEqp(Long equipmentId);
 
 
-    @Update("update equipment_category ec set ec.stock = stock +1 ,ec.book_stock = book_stock +1 where ec.category_id = (select  category_id from equipment where equipment_id = #{equipmentId})")
+    /**
+     * 归还器材时，将对应的器材分类库存数量加一 (物理库存)
+     * 通过器材Id 从器材表里 查询对应的器材分类Id 再对物理库存操作数量
+     * @param equipmentId
+     */
+    // ！！！修改了这里的SQL，只更新 stock，忽略 book_stock
+    @Update("update equipment_category ec set ec.stock = stock +1 where ec.category_id = (select  category_id from equipment where equipment_id = #{equipmentId})")
     void ReturnEqp(Long equipmentId);
 
     @Select("select * from equipment_category where name = #{name}")
@@ -73,18 +74,4 @@ public interface CategoryMapper {
 
 //    @Update("update equipment_category ec set ec.total = ec.stock - 1 ,ec.stock = ec.stock - 1")
 //    void reduceEquipment(Long equipmentId);
-
-    /*代码责任切割*/
-//    查询账面库存 (book_stock)
-    @Select("SELECT book_stock FROM equipment_category WHERE category_id = #{categoryId}")
-    Integer getBookStockByCategoryId(Long categoryId);
-
-    //    查询当前库存 (stock)
-    @Select("SELECT stock FROM equipment_category WHERE category_id = #{categoryId}")
-    Integer getStockByCategoryId(Long categoryId);
-
-    //将器材分类表里的账面库存减一
-    @Update("update equipment_category ec set ec.book_stock = ec.book_stock - #{nums} where ec.category_id = (select category_id from equipment where equipment_id = #{equipmenntId})")
-    void reduceBookStockWithNums(Long equipmentId,int nums);
-
 }

@@ -7,6 +7,7 @@ import com.example.common.response.Result;
 import com.example.equipment.dto.AssessDamageRequest;
 import com.example.equipment.dto.AssessDamageResult;
 import com.example.equipment.dto.EquipmentDTO;
+import com.example.equipment.dto.ScanRequest;
 import com.example.equipment.dto.utilDTO.EquipmentPageQuery;
 import com.example.equipment.pojo.JudgeDamage;
 import com.example.equipment.service.impl.EquipmentServiceImpl;
@@ -121,6 +122,22 @@ public class EquipmentController {
             // 对于失败情况，根据结果中的 message 返回错误
             return Result.error(result.getMessage(), result); // 将结果对象也返回，前端可以根据 relative 字段判断具体错误类型
         }
+    }
+
+    /**
+     * 现场扫码借取或归还器材接口
+     * 接收带有器材二维码的图片Base64，识别器材ID，根据器材当前状态判断是借取还是归还。
+     * 需要用户登录。
+     * @param request 包含图片Base64的请求体
+     * @param user 当前操作用户
+     * @return 操作结果 (借取成功/归还成功/失败原因)
+     */
+    @PostMapping("/scanAndHandle")
+    @Operation(summary = "扫码借取/归还器材")
+    public Result<String> scanAndHandle(@RequestBody ScanRequest request, @Parameter(hidden = true) UserConstant user) {
+        // Service 层已经处理了用户登录检查
+        log.info("收到扫码借取/归还请求");
+        return equipmentService.scanAndHandle(request, user);
     }
 
 }
