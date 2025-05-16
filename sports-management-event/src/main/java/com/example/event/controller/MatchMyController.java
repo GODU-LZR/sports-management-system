@@ -5,6 +5,7 @@ import com.example.common.response.Result;
 import com.example.event.service.MatchService;
 import com.example.event.service.impl.MatchServiceImpl;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,7 +34,7 @@ public class MatchMyController {
     @GetMapping("/{matchId}")
     public Result<Map<String, Object>> getMatchData(
             @PathVariable String matchId,
-            @RequestParam UserConstant userConstant) {
+            @Parameter(hidden = true) UserConstant userConstant) {
         // 从当前登录用户中获取userId
         Long userId = userConstant.getUserId();
         Map<String, Object> matchData = matchService.getMatchData(matchId, userId);
@@ -49,7 +50,7 @@ public class MatchMyController {
     @GetMapping("/{matchId}/quarters")
     public Result<List<Map<String, Object>>> getQuartersData(
             @PathVariable String matchId,
-            @RequestParam UserConstant userConstant) {
+            @Parameter(hidden = true) UserConstant userConstant) {
         // 从当前登录用户中获取userId
         Long userId = userConstant.getUserId();
         List<Map<String, Object>> quartersData = matchService.getQuartersData(matchId, userId);
@@ -65,7 +66,7 @@ public class MatchMyController {
     @GetMapping("/{matchId}/teamstats")
     public Result<List<Map<String, Object>>> getTeamStatsData(
             @PathVariable String matchId,
-            @RequestParam UserConstant userConstant) {
+            @Parameter(hidden = true) UserConstant userConstant) {
         // 从当前登录用户中获取userId
         Long userId = userConstant.getUserId();
         List<Map<String, Object>> teamStatsData = matchService.getTeamStatsData(matchId, userId);
@@ -81,7 +82,7 @@ public class MatchMyController {
     @GetMapping("/{matchId}/players")
     public Result<List<List<Map<String, Object>>>> getPlayersData(
             @PathVariable String matchId,
-            @RequestParam UserConstant userConstant) {
+            @Parameter(hidden = true) UserConstant userConstant) {
         // 从当前登录用户中获取userId
         Long userId = userConstant.getUserId();
         List<List<Map<String, Object>>> playersData = matchService.getPlayersData(matchId, userId);
@@ -99,7 +100,7 @@ public class MatchMyController {
     public Result<String> updateMatchData(
             @PathVariable String matchId,
             @RequestBody Map<String, Object> form,
-            @RequestParam UserConstant userConstant) {
+            @Parameter(hidden = true) UserConstant userConstant) {
         // 从当前登录用户中获取userId
         Long userId = userConstant.getUserId();
         boolean success = matchService.updateMatchData(matchId, form, userId);

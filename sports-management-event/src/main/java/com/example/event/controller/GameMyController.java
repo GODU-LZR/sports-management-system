@@ -3,6 +3,7 @@ package com.example.event.controller;
 import com.example.common.constant.UserConstant;
 import com.example.common.response.Result;
 import com.example.event.service.GameService;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,7 +67,7 @@ public class GameMyController {
     @PutMapping("/my/game")
     public Result<String> updateGameData(
             @RequestBody Map<String, Object> form,
-            @RequestParam UserConstant userConstant) {
+            @Parameter(hidden = true) UserConstant userConstant) {
         try {
             // 这里假设从当前登录用户中获取userId，实际项目中应该从安全上下文中获取
             Long userId = 1L; // 模拟当前登录用户ID

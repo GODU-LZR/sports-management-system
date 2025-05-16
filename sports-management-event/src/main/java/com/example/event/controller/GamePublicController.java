@@ -3,6 +3,7 @@ package com.example.event.controller;
 import com.example.common.constant.UserConstant;
 import com.example.common.response.Result;
 import com.example.event.service.GameService;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,7 +61,7 @@ public class GamePublicController {
     @GetMapping("/my/competition/count")
     public Result<Integer> getMyCompetitionCount(
             @RequestParam(required = false) Integer reviewStatus,
-            @RequestParam(required = false) UserConstant userConstant) {
+            @Parameter(hidden = true) UserConstant userConstant) {
         // 这里假设从当前登录用户中获取userId，实际项目中应该从安全上下文中获取
 
         Integer count = gameService.getMyCompetitionCount(reviewStatus, userConstant.getUserId());
