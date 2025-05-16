@@ -12,9 +12,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class EquipmentDTO {
 
-    private Long equipmentId;  //器材ID
+    private Long equipmentId;
 
-//    private String name;
+    private Long categoryId;  //器材分类ID
+
+    private String name;    //器材分类的名称
 
     private String pictureUrl;   // 器材图片
 

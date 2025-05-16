@@ -30,4 +30,6 @@ public class Equipment {
     private Long createId;
 
     private Long modifiedId;
+
+    private Integer conditionScore;   //器材完好程度的表示（0-100）
 }

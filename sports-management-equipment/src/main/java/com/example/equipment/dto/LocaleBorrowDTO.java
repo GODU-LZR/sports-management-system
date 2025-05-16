@@ -10,11 +10,13 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserOperateEquipmentDTO {
+public class LocaleBorrowDTO {
 
-    private LocalDateTime now;
+//    private LocalDateTime now;
 
-    private String operation;  //领取或是归还
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
 
     private Long equipmentId;
 

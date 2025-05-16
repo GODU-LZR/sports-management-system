@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.common.constant.UserConstant;
 import com.example.equipment.mapper.sqlProvider.EquipmentSqlProvider;
 import com.example.equipment.pojo.Equipment;
+import com.example.equipment.pojo.JudgeDamage;
 import com.example.equipment.vo.EquipmentVO;
 import org.apache.ibatis.annotations.*;
 import com.example.equipment.pojo.Equipment; // 导入你的 Equipment 实体类
@@ -97,7 +98,7 @@ public interface EquipmentMapper extends BaseMapper<Equipment> {
      */
     @Select("select equipment_id from equipment" +
             " where category_id = #{categoryId} " +
-            "and status = 1 " +
+//            "and status = 1 " +
             "and is_deleted = 0 " +
             "and not exists(select 1 from equipment_request er " +
             "where er.equipment_id =equipment.equipment_id " +
@@ -112,4 +113,15 @@ public interface EquipmentMapper extends BaseMapper<Equipment> {
                                          @Param("endTime") LocalDateTime endTime,
                                          @Param("limit") int limit);
 
+    @Update("update equipment set condition_score = #{conditionScore} where equipment_id = #{equipmentId}")
+    void updateEquipmentCondition(JudgeDamage judgeDamage);
+
+
+    /**
+     * 根据器材ID获取器材的图片URL
+     * @param equipmentId 器材ID
+     * @return 图片URL字符串
+     */
+    @Select("select picture_url from equipment where equipment_id = #{equipmentId} and is_deleted = 0")
+    String getPictureUrlById(Long equipmentId);
 }

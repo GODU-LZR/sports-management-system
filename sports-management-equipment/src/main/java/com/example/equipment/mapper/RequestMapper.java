@@ -9,6 +9,7 @@ import com.example.equipment.vo.AdminRequestVO;
 import com.example.equipment.vo.RequestVO;
 import org.apache.ibatis.annotations.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -113,4 +114,27 @@ public interface RequestMapper extends BaseMapper<RequestVO> {
             @Param("userId") Long userId
     );
 
+    @Select("select * from equipment_request " +
+            "where user_id = #{userId} " +
+            "and equipment_id = #{equipmentId} " +
+            "and status = 1 " +
+            "AND #{now} BETWEEN start_time AND end_time " +
+            "ORDER BY start_time ASC " +
+            "limit 1") //在那个时间段内
+    List<RequestVO> findPassedRequestByEquipmentId(@Param("equipmentId") Long equipmentId, @Param("userId") Long userId, @Param("now")LocalDateTime now);
+
+    //设置为出库
+    @Update("update equipment_request set status = 5 where request_id = #{requestId} and equipment_id = #{equipmentId}")
+    void updateStatus_TO_5( @Param("requestId")Long requestId, @Param("equipmentId")Long equipmentId);
+
+    //设置为已归还
+    @Update("update equipment_request set status = 3 where request_id = #{requestId} and equipment_id = #{equipmentId}")
+    void updateStatus_TO_3( @Param("requestId")Long requestId, @Param("equipmentId")Long equipmentId);
+
+    @Select("select * from equipment_request " +
+            "where user_id = #{userId} " +
+            "and equipment_id = #{equipmentId} " +
+            "and status = 5 " +
+            "limit 1") //在那个时间段内
+    List<RequestVO> findBorrowed_RequestByEquipmentId(@Param("equipmentId") Long equipmentId, @Param("userId") Long userId);
 }
