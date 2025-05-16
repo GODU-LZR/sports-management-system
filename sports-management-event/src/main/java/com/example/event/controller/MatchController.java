@@ -14,17 +14,17 @@ import java.util.Map;
 
 /**
  * 比赛控制器
- * 处理/my/match/{matchId}相关的接口
+ * 处理/restcontroll/match/{matchId}相关的接口
  */
 @RestController
+@RequestMapping("/my/match")
 @RequiredArgsConstructor
 public class MatchController {
 
-
     private final MatchService matchService;
 
-    public MatchController(){
-        this.matchService=new MatchServiceImpl();
+    public MatchController() {
+        this.matchService = new MatchServiceImpl();
     }
 
     /**
@@ -33,7 +33,7 @@ public class MatchController {
      * @param matchId 比赛id
      * @return 比赛基本信息
      */
-    @GetMapping("/my/match/{matchId}")
+    @GetMapping("/{matchId}")
     public Result<Map<String, Object>> getMatchData(
             @PathVariable String matchId,
             @RequestParam UserConstant userConstant) {
@@ -49,7 +49,7 @@ public class MatchController {
      * @param matchId 比赛id
      * @return 赛段得分信息
      */
-    @GetMapping("/my/match/{matchId}/quarters")
+    @GetMapping("/{matchId}/quarters")
     public Result<List<Map<String, Object>>> getQuartersData(
             @PathVariable String matchId,
             @RequestParam UserConstant userConstant) {
@@ -65,7 +65,7 @@ public class MatchController {
      * @param matchId 比赛id
      * @return 队伍得分信息
      */
-    @GetMapping("/my/match/{matchId}/teamstats")
+    @GetMapping("/{matchId}/teamstats")
     public Result<List<Map<String, Object>>> getTeamStatsData(
             @PathVariable String matchId,
             @RequestParam UserConstant userConstant) {
@@ -81,7 +81,7 @@ public class MatchController {
      * @param matchId 比赛id
      * @return 球员得分信息
      */
-    @GetMapping("/my/match/{matchId}/players")
+    @GetMapping("/{matchId}/players")
     public Result<List<List<Map<String, Object>>>> getPlayersData(
             @PathVariable String matchId,
             @RequestParam UserConstant userConstant) {
@@ -98,7 +98,7 @@ public class MatchController {
      * @param form    修改表单
      * @return 操作结果
      */
-    @PutMapping("/my/match/{matchId}")
+    @PutMapping("/{matchId}")
     public Result<String> updateMatchData(
             @PathVariable String matchId,
             @RequestBody Map<String, Object> form,
@@ -120,7 +120,7 @@ public class MatchController {
      * @param form    修改表单
      * @return 操作结果
      */
-    @PutMapping("/my/match/{matchId}/quarters")
+    @PutMapping("/{matchId}/quarters")
     public Result<String> updateQuartersData(
             @PathVariable String matchId,
             @RequestBody List<Map<String, Object>> form,
@@ -142,7 +142,7 @@ public class MatchController {
      * @param form    修改表单
      * @return 操作结果
      */
-    @PutMapping("/my/match/{matchId}/teamstats")
+    @PutMapping("/{matchId}/teamstats")
     public Result<String> updateTeamStatsData(
             @PathVariable String matchId,
             @RequestBody List<Map<String, Object>> form,
@@ -164,7 +164,7 @@ public class MatchController {
      * @param form    修改表单
      * @return 操作结果
      */
-    @PutMapping("/my/match/{matchId}/players")
+    @PutMapping("/{matchId}/players")
     public Result<String> updatePlayersData(
             @PathVariable String matchId,
             @RequestBody Map<String, Object> form,

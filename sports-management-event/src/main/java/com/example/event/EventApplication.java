@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 
 @SpringBootApplication(scanBasePackages = "com.example")
 @EnableDiscoveryClient
-@Import({WebSecurityConfig.class, OpenAPIConfig.class, WebMvcConfig.class, JacksonConfig.class, RedisConfig.class, RedisUtil.class}) // 确保加载 common 模块的配置
+@Import({WebSecurityConfig.class, OpenAPIConfig.class, WebMvcConfig.class, RedisConfig.class, RedisUtil.class}) // 确保加载 common 模块的配置
 public class EventApplication {
     public static void main(String[] args) {
         SpringApplication.run(EventApplication.class, args);
