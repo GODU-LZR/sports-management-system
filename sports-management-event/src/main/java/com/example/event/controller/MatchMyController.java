@@ -4,7 +4,6 @@ import com.example.common.constant.UserConstant;
 import com.example.common.response.Result;
 import com.example.event.service.MatchService;
 import com.example.event.service.impl.MatchServiceImpl;
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -17,11 +16,11 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/my/match")
-public class MatchController {
+public class MatchMyController {
 
     private final MatchService matchService;
 
-    public MatchController() {
+    public MatchMyController() {
         this.matchService = new MatchServiceImpl();
     }
 
@@ -183,7 +182,7 @@ public class MatchController {
      * @param matchId 比赛id
      * @return 操作结果
      */
-    @PostMapping("/sport/match/follow/{matchId}")
+    @PostMapping("/match/follow/{matchId}")
     public Result<String> handleFollow(
             @PathVariable String matchId,
             @RequestParam UserConstant userConstant) {
