@@ -5,8 +5,7 @@ import com.example.common.response.Result;
 import com.example.event.service.MatchService;
 import com.example.event.service.impl.MatchServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +17,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/my/match")
-@RequiredArgsConstructor
 public class MatchController {
 
     private final MatchService matchService;
