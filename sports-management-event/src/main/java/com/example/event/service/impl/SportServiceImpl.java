@@ -62,7 +62,7 @@ public class SportServiceImpl implements SportService {
 
             // 如果gameId不为空，则添加到对应体育项目的games列表中
             if (gameId != null && gameName != null) {
-                GameVO gameVO = GameVO.convertFrom((Game) item);
+                GameVO gameVO = convertFrom(item); // 使用新的转换方法
                 sportMap.get(sportId).getGames().add(gameVO);
             }
         }
@@ -86,6 +86,16 @@ public class SportServiceImpl implements SportService {
             BeanUtils.copyProperties(sport, sportVO);
             return sportVO;
         }).collect(Collectors.toList());
+    }
+    private static String formatLocalDateTime(Object obj) {
+        if (obj == null) {
+            return null;
+        } else if (obj instanceof LocalDateTime) {
+            return ((LocalDateTime) obj).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        } else if (obj instanceof String) {
+            return (String) obj; // 如果已经是字符串格式
+        }
+        return null;
     }
 
     /**
@@ -147,6 +157,44 @@ public class SportServiceImpl implements SportService {
         return gameMapper.getCompetitionCount(sportId.longValue());
     }
 
+    public static GameVO convertFrom(Map<String, Object> map) {
+        if (map == null || map.isEmpty()) {
+            return null;
+        }
+
+        GameVO vo = new GameVO();
+
+        // 设置 gameId
+        if (map.get("game_id") != null) {
+            vo.setGameId(((Number) map.get("game_id")).longValue());
+        }
+
+        // 设置 name
+        vo.setName((String) map.get("game_name")); // 注意字段名是否正确，比如"game_name"
+
+        // 设置 sport
+        vo.setSport((String) map.get("sport"));
+
+        // 设置负责人
+        vo.setResponsiblePeople((String) map.get("responsible_people"));
+
+        // 设置电话
+        vo.setPhone((String) map.get("phone"));
+
+        // 设置时间字段
+        vo.setRegisterStartTime(formatLocalDateTime(map.get("register_start_time")));
+        vo.setRegisterEndTime(formatLocalDateTime(map.get("register_end_time")));
+        vo.setStartTime(formatLocalDateTime(map.get("start_time")));
+        vo.setEndTime(formatLocalDateTime(map.get("end_time")));
+
+        // 设置备注和模式
+        vo.setNote((String) map.get("note"));
+        vo.setMode((Integer) map.get("mode"));
+
+        return vo;
+    }
+
+    // 辅助方法：处理 LocalDateTime 或 String 类型的时间字段
 
 
     /**
