@@ -1,6 +1,9 @@
 package com.example.event.DTO.vo;
 
+import com.example.event.dao.Game;
 import lombok.Data;
+
+import java.time.format.DateTimeFormatter;
 
 /**
  * 赛事VO对象
@@ -62,4 +65,38 @@ public class GameVO {
      * 匹配模式
      */
     private Integer mode;
+    public static GameVO convertFrom(Game game) {
+        if (game == null) {
+            return null;
+        }
+
+        GameVO vo = new GameVO();
+        vo.setGameId(game.getGameId());
+        vo.setName(game.getName());
+        vo.setSport(game.getSport()); // 如果需要 sportId 可以从 game.getsportId()
+        vo.setResponsiblePeople(game.getResponsiblePeople());
+        vo.setPhone(game.getPhone());
+        vo.setNote(game.getNote());
+        vo.setMode(game.getMode());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        if (game.getRegisterStartTime() != null) {
+            vo.setRegisterStartTime(game.getRegisterStartTime().format(formatter));
+        }
+
+        if (game.getRegisterEndTime() != null) {
+            vo.setRegisterEndTime(game.getRegisterEndTime().format(formatter));
+        }
+
+        if (game.getStartTime() != null) {
+            vo.setStartTime(game.getStartTime().format(formatter));
+        }
+
+        if (game.getEndTime() != null) {
+            vo.setEndTime(game.getEndTime().format(formatter));
+        }
+
+        return vo;
+    }
 }

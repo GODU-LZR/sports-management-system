@@ -62,9 +62,7 @@ public class SportServiceImpl implements SportService {
 
             // 如果gameId不为空，则添加到对应体育项目的games列表中
             if (gameId != null && gameName != null) {
-                GameVO gameVO = new GameVO();
-                gameVO.setGameId(gameId);
-                gameVO.setName(gameName);
+                GameVO gameVO = GameVO.convertFrom((Game) item);
                 sportMap.get(sportId).getGames().add(gameVO);
             }
         }
