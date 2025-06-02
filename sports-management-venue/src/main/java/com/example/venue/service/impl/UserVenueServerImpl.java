@@ -3,6 +3,7 @@ package com.example.venue.service.impl;
 import com.alibaba.fastjson2.JSON; // 导入 Fastjson2
 import com.example.venue.pojo.NearVenue;
 import com.example.venue.pojo.NearVenueParam;
+import com.example.venue.pojo.VenueDocument;
 import com.example.venue.service.UserVenueServer;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -14,6 +15,7 @@ import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -31,19 +33,19 @@ public class UserVenueServerImpl implements UserVenueServer {
     private RestHighLevelClient elasticsearchClient;
 
     // Elasticsearch 索引名称 (请根据你的实际索引名称修改)
-    private static final String VENUE_INDEX_NAME = "your_venue_index_name";
+    private static final String VENUE_INDEX_NAME = "venue";
 
     // Elasticsearch 中存储地理位置的字段名称 (请根据你的实际字段名称修改，该字段类型应为 geo_point)
     private static final String LOCATION_FIELD_NAME = "location";
 
     // Elasticsearch 中用于全文搜索的字段名称 (请根据你的实际字段名称修改)
-    private static final String[] SEARCHABLE_FIELDS = {"name", "position"}; // 例如：在 name 和 position 字段中搜索关键字
+    private static final String[] SEARCHABLE_FIELDS = {"name", "position"}; // 例如：在 name 字段中搜索关键字
 
     // 默认返回数量，如果 NearVenueParam.limit 未指定或小于等于0
     private static final int DEFAULT_LIMIT = 10;
 
     @Override
-    public List<NearVenue> searchNearVenue(NearVenueParam param) {
+    public List<VenueDocument> searchNearVenue(NearVenueParam param) {
         // 1. 创建搜索请求
         SearchRequest searchRequest = new SearchRequest(VENUE_INDEX_NAME);
 
@@ -56,6 +58,7 @@ public class UserVenueServerImpl implements UserVenueServer {
         // 3.1 添加关键字搜索条件 (MUST)
         if (param.getKey() != null && !param.getKey().trim().isEmpty()) {
             // 使用 multi_match 在多个字段中搜索关键字
+            // SEARCHABLE_FIELDS 需要定义为类常量，例如 {"name", "position", "sport"}
             boolQuery.must(QueryBuilders.multiMatchQuery(param.getKey(), SEARCHABLE_FIELDS));
         } else {
             // 如果没有关键字，则匹配所有文档
@@ -63,7 +66,7 @@ public class UserVenueServerImpl implements UserVenueServer {
         }
 
         // 4. 解析地理位置并添加按距离排序
-        GeoPoint centerPoint = null;
+        GeoPoint centerPoint = null; // 用于存储解析后的中心点
         if (param.getLocation() != null && !param.getLocation().trim().isEmpty()) {
             try {
                 // 解析地理位置字符串 "latitude, longitude"
@@ -75,13 +78,15 @@ public class UserVenueServerImpl implements UserVenueServer {
 
                     // 添加按距离排序 (PRIMARY SORT)
                     // 按照从中心点到文档位置的距离升序排序
+                    // LOCATION_FIELD_NAME 需要定义为类常量，例如 "location"
                     sourceBuilder.sort(SortBuilders.geoDistanceSort(LOCATION_FIELD_NAME, centerPoint)
                             .order(SortOrder.ASC) // 升序，最近的在前
                             .unit(DistanceUnit.KILOMETERS) // 排序距离单位，这里固定为公里，你可以根据需要修改
-                            .geoDistance(GeoDistance.ARC)); // <-- **修正：使用 GeoDistance.ARC 枚举**
+                            .geoDistance(GeoDistance.ARC)); // 使用 GeoDistance.ARC 枚举
 
                     // TODO: 如果需要限定搜索半径，可以在这里添加 geo_distance filter 到 boolQuery 中
                     // if (param.getDistance() != null && param.getDistance() > 0) {
+                    //     // param.getDistanceUnit() 需要在 NearVenueParam 中定义
                     //     DistanceUnit unit = DistanceUnit.fromString(param.getDistanceUnit());
                     //     boolQuery.filter(QueryBuilders.geoDistanceQuery(LOCATION_FIELD_NAME)
                     //             .point(centerPoint)
@@ -115,30 +120,33 @@ public class UserVenueServerImpl implements UserVenueServer {
         // 将 sourceBuilder 设置到 searchRequest
         searchRequest.source(sourceBuilder);
 
-        List<NearVenue> nearVenues = new ArrayList<>();
+        // **修改返回类型和列表**
+        List<VenueDocument> venueList = new ArrayList<>();
 
         // 6. 执行搜索
         try {
+            System.out.println("Executing Elasticsearch search for nearby venues...");
             SearchResponse searchResponse = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT);
+            System.out.println("Search completed. Hits: " + searchResponse.getHits().getTotalHits().value);
+
 
             // 7. 处理搜索结果
-            for (SearchHit hit : searchResponse.getHits().getHits()) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits.getHits()) {
                 String sourceAsString = hit.getSourceAsString();
-                if (sourceAsString != null) {
-                    // 使用 Fastjson2 将 JSON 字符串反序列化为 NearVenue 对象
-                    NearVenue venue = JSON.parseObject(sourceAsString, NearVenue.class);
+                if (sourceAsString != null && !sourceAsString.isEmpty()) {
+                    try {
+                        // **直接反序列化为 VenueDocument**
+                        VenueDocument venue = JSON.parseObject(sourceAsString, VenueDocument.class);
 
-                    // 从排序结果中获取计算出的距离
-                    // 如果按距离排序是第一个排序键，距离值会在 sortValues[0]
-                    if (centerPoint != null && hit.getSortValues() != null && hit.getSortValues().length > 0) {
-                        // 排序值通常是 Double 类型
-                        if (hit.getSortValues()[0] instanceof Number) {
-                            venue.setCalculatedDistance(((Number) hit.getSortValues()[0]).doubleValue());
-                        }
-                        // 注意：这里获取到的距离单位与 sortBuilders.geoDistanceSort().unit() 设置的单位一致 (本例中是公里)
+                        // **移除获取和设置 calculatedDistance 的代码**
+                        // 因为 VenueDocument 没有这个字段
+
+                        venueList.add(venue);
+                    } catch (Exception jsonParseError) {
+                        System.err.println("Error parsing JSON source to VenueDocument for hit ID " + hit.getId() + ": " + jsonParseError.getMessage());
+                        jsonParseError.printStackTrace();
                     }
-
-                    nearVenues.add(venue);
                 }
             }
 
@@ -149,7 +157,11 @@ public class UserVenueServerImpl implements UserVenueServer {
             // 根据你的业务需求，可以选择抛出自定义异常或返回空列表
             // throw new RuntimeException("Failed to search nearby venues", e);
             return new ArrayList<>(); // 发生异常时返回空列表
+        } catch (Exception e) {
+            System.err.println("An unexpected error occurred during Elasticsearch search: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>(); // 捕获其他可能的异常
         }
-        return nearVenues;
+        return venueList; // 返回 VenueDocument 列表
     }
 }

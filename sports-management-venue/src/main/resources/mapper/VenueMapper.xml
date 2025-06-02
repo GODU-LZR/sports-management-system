@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.venue.mapper.VenueMapper">
+
+    <select id="listVenues"
+            parameterType="com.example.venue.dto.VenueQueryRequest"
+            resultType="com.example.venue.pojo.mysql.Venue">
+        SELECT *
+        FROM venue
+        <where>
+            is_deleted = 0
+            <choose>
+                <!-- 如果 venueId 不为空，则只根据 venueId 查询 -->
+                <when test="venueId != null and venueId != ''">
+                    AND venue_id = #{venueId}
+                </when>
+                <!-- 如果 venueId 为空，则根据 position 和 state 查询 -->
+                <otherwise>
+                    <if test="position != null and position != ''">
+                        AND position LIKE CONCAT('%', #{position}, '%')
+                    </if>
+                    <if test="state != null">
+                        AND state = #{state}
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+        <!-- 根据 state 排序，0 在前，1 在后 -->
+        ORDER BY state ASC
+        LIMIT #{page}, 10
+    </select>
+
+    <select id="listVenuesPage"
+            parameterType="com.example.venue.dto.VenueQueryRequest"
+            resultType="com.example.venue.pojo.mysql.Venue">
+        SELECT COUNT(*) AS total
+        FROM venue
+        <where>
+            is_deleted = 0
+            <choose>
+                <!-- 如果 venueId 不为空，则只根据 venueId 查询 -->
+                <when test="venueId != null and venueId != ''">
+                    AND venue_id = #{venueId}
+                </when>
+                <!-- 如果 venueId 为空，则根据 position 和 state 查询 -->
+                <otherwise>
+                    <if test="position != null and position != ''">
+                        AND position LIKE CONCAT('%', #{position}, '%')
+                    </if>
+                    <if test="state != null">
+                        AND state = #{state}
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <insert id="addVenue" parameterType="com.example.venue.dto.VenueAddRequest">
+        INSERT INTO venue (venue_id, name, sport_id, position, value, longitude, latitude, state, created_id, updated_id )
+        VALUES (#{venueId}, #{name}, #{sportId}, #{position}, #{value}, #{longitude}, #{latitude}, #{state}, #{createdId}, #{updatedId} )
+    </insert>
+
+    <update id="updateVenue" parameterType="com.example.venue.dto.VenueUpdateRequest">
+        UPDATE venue
+        SET
+            sport_id = #{sportId},
+            name = #{name},
+            position = #{position},
+            value = #{value},
+            longitude = #{longitude},
+            latitude = #{latitude},
+            state = #{state},
+            updated_id = #{updatedId}
+        WHERE
+            venue_id = #{venueId}
+    </update>
+
+    <update id="deleteVenue">
+        UPDATE venue
+        SET is_deleted = 1,
+            updated_id = #{auditId}
+        WHERE venue_id = #{venueId}
+    </update>
+
+    <select id="listVenueOptions" resultType="com.example.venue.vo.VenueOption">
+        SELECT venue_id AS venueId, name
+        FROM venue
+        WHERE is_deleted = 0
+        <if test="key != null and key != ''">
+            AND (
+            name LIKE CONCAT('%', #{key}, '%')
+            OR position LIKE CONCAT('%', #{key}, '%')
+            )
+        </if>
+        ORDER BY
+        name ASC
+    </select>
+
+    <select id="listVenuesByIds" resultType="com.example.venue.pojo.mysql.Venue">
+        SELECT *
+        FROM venue
+        WHERE is_deleted = 0
+        AND venue_id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+</mapper>

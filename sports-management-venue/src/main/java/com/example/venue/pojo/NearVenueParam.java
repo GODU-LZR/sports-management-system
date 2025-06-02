@@ -11,4 +11,15 @@ public class NearVenueParam {
 
     private Double distance; // 距离数值
     private String distanceUnit = "km";
+
+    @Override
+    public String toString() {
+        return "NearVenueParam{" +
+                "key='" + key + '\'' +
+                ", location='" + location + '\'' +
+                ", limit=" + limit +
+                ", distance=" + distance +
+                ", distanceUnit='" + distanceUnit + '\'' +
+                '}';
+    }
 }

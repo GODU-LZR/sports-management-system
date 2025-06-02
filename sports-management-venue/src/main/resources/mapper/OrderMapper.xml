@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.venue.mapper.OrderMapper">
+
+    <select id="listOrder" parameterType="com.example.venue.dto.UserOrderQueryRequest"
+            resultType="com.example.venue.vo.OrderDetail">
+        SELECT
+        o.order_id AS orderId,
+        o.user_id AS userId,
+        o.phone,
+        o.venue_id AS venueId,
+        v.name,                <!-- 从venue表获取场地名称 -->
+        v.position,            <!-- 从venue表获取场地位置 -->
+        o.value,      <!-- 从venue表获取场地价格并映射为value -->
+        o.start_time AS startTime,
+        o.end_time AS endTime,
+        o.order_time AS orderTime,
+        o.pay_time AS payTime,
+        o.audit_id AS auditId,
+        o.audit_name AS auditName,
+        o.state,
+        o.payState,
+        o.payment
+        FROM venue_order o
+        LEFT JOIN venue v ON o.venue_id = v.venue_id
+        WHERE o.is_deleted = 0
+        <choose>
+            <when test="userId != null and userId != ''">
+                AND o.user_id = #{userId}
+            </when>
+            <otherwise>
+                AND 1=0  <!-- 直接拦截 -->
+            </otherwise>
+        </choose>
+        <if test="venueId != null and venueId != ''">
+            AND o.venue_id = #{venueId}
+        </if>
+        <if test="state != null">
+            AND o.state = #{state}
+        </if>
+        <if test="payState != null">
+            AND o.pay_state = #{payState}
+        </if>
+        ORDER BY o.order_time DESC
+        LIMIT #{page}, 10
+    </select>
+
+    <select id="listOrderByAdmin" parameterType="com.example.venue.dto.AdminOrderQueryRequest"
+            resultType="com.example.venue.vo.OrderDetail">
+        SELECT
+        o.order_id AS orderId,
+        o.user_id AS userId,
+        o.phone,
+        o.venue_id AS venueId,
+        v.name,
+        v.position,
+        o.value,
+        o.start_time AS startTime,
+        o.end_time AS endTime,
+        o.order_time AS orderTime,
+        o.pay_time AS payTime,
+        o.audit_id AS auditId,
+        o.audit_name AS auditName,
+        o.state,
+        o.payState,
+        o.payment
+        FROM venue_order o
+        LEFT JOIN venue v ON o.venue_id = v.venue_id
+        WHERE o.is_deleted = 0
+        <if test="orderId != null and orderId != ''">
+            AND o.order_id = #{orderId}
+        </if>
+        <if test="venueId != null and venueId != ''">
+            AND o.venue_id = #{venueId}
+        </if>
+        <if test="state != null">
+            AND o.state = #{state}
+        </if>
+        <if test="orderTime != null and orderTime.size() == 2">
+            AND o.order_time BETWEEN
+            #{orderTime[0], jdbcType=TIMESTAMP}
+            AND #{orderTime[1], jdbcType=TIMESTAMP}
+        </if>
+        ORDER BY o.order_time DESC
+        LIMIT #{page}, 10  <!-- 直接使用page，无需校验 -->
+    </select>
+
+    <select id="listOrderByAdminPage" parameterType="com.example.venue.dto.AdminOrderQueryRequest"
+            resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM venue_order
+        WHERE is_deleted = 0
+        <!-- 精确匹配条件（字符串/数字） -->
+        <if test="orderId != null and orderId != ''">
+            AND order_id = #{orderId, jdbcType=VARCHAR}  <!-- 明确字符串类型 -->
+        </if>
+        <if test="venueId != null and venueId != ''">
+            AND venue_id = #{venueId, jdbcType=BIGINT}    <!-- 明确数值类型 -->
+        </if>
+        <if test="state != null">
+            AND state = #{state, jdbcType=INTEGER}        <!-- 枚举/状态码建议用整数 -->
+        </if>
+        <!-- 时间范围查询（修复字段名，显式声明类型） -->
+        <if test="orderTime != null and orderTime.size() == 2">
+            AND order_time BETWEEN
+            #{orderTime[0], jdbcType=TIMESTAMP}
+            AND #{orderTime[1], jdbcType=TIMESTAMP}
+        </if>
+    </select>
+
+    <insert id="addOrder" parameterType="com.example.venue.dto.OrderAddDto">
+        INSERT INTO venue_order
+        (order_id, venue_id, user_id, phone, value, start_time, end_time, state)
+        VALUES (
+                   #{orderId},
+                   #{venueId},
+                   #{userId},
+                   #{phone},
+                   (SELECT v.value FROM venue v WHERE v.venue_id = #{venueId}),
+                   #{startTime},
+                   #{endTime},
+                   0
+               )
+    </insert>
+
+    <select id="listDisabledRange" parameterType="com.example.venue.dto.OrderTimeOptionRequest"
+            resultType="com.example.venue.vo.TimeOption">
+        SELECT
+        start_time AS startTime,
+        end_time AS endTime
+        FROM venue_order
+        WHERE venue_id = #{venueId, jdbcType=BIGINT}
+        AND is_deleted = 0
+        AND state IN (0, 1)
+        AND DATE(start_time) = #{date, jdbcType=DATE}  <!-- 显式声明仅比较日期 -->
+        ORDER BY start_time ASC
+    </select>
+
+    <select id="getOrderById" resultType="com.example.venue.pojo.mysql.Order">
+        SELECT *
+        FROM venue_order`
+        WHERE order_id = #{orderId}
+        LIMIT 1 <!-- 明确限制只返回一条记录 -->
+    </select>
+
+    <select id="getReplaceData" resultType="com.example.venue.dto.ReplaceVenueDto">
+        SELECT
+            v.sport_id AS sportId,
+            o.start_time AS startTime,
+            o.end_time AS endTime
+        FROM venue_order o
+        JOIN venue v ON o.venue_id = v.venue_id
+        WHERE o.order_id = #{orderId}
+        AND o.is_deleted = 0
+        AND v.is_deleted = 0
+        LIMIT 1
+    </select>
+
+    <select id="listReplaceVenue" parameterType="com.example.venue.dto.ReplaceVenueDto"
+            resultType="com.example.venue.vo.ReplaceVenue">
+        SELECT
+        v.venue_id AS venueId,
+        v.name,
+        v.value
+        FROM venue v
+        WHERE v.sport_id = #{sportId}
+        AND v.is_deleted = 0
+        AND v.venue_id NOT IN (
+            SELECT DISTINCT o.venue_id
+            FROM venueOrder o
+            WHERE o.state != 2
+            AND o.state != 3
+            AND o.is_deleted = 0
+            AND o.end_time > #{startTime}
+            AND #{endTime} > o.start_time)
+    </select>
+
+    <insert id="replaceOrder" parameterType="com.example.venue.dto.OrderAddDto">
+        INSERT INTO venueOrder
+        ( order_id, venue_id, user_id, phone, value, start_time, end_time, order_time, updated_time, state)
+        VALUES (#{orderId}, #{venueId}, #{userId}, #{phone}, #{value}, #{startTime}, #{endTime}, NOW(), NOW(), 4)
+    </insert>
+
+    <update id="agreeOrder">
+        UPDATE venue_order
+        SET
+        state = 1,
+        audit_id = #{auditId},
+        updated_time = NOW()
+        WHERE order_id = #{orderId}
+        AND state = 0
+        AND is_deleted = 0
+    </update>
+
+    <update id="disagreeOrder" parameterType="com.example.venue.dto.OrderReasonRequest">
+        UPDATE venue_order
+        SET
+        state = 2, <!-- 2表示审核拒绝 -->
+        reason = #{reason}, <!-- 拒绝原因 -->
+        audit_id = #{auditId}, <!-- 审核人ID -->
+        updated_time = NOW() <!-- 最后更新时间 -->
+        WHERE
+        order_id = #{orderId}
+        AND state = 0 <!-- 只能拒绝待审核(0)的订单 -->
+        AND is_deleted = 0
+    </update>
+
+    <update id="cancelOrder" parameterType="com.example.venue.dto.OrderReasonRequest">
+        UPDATE venue_order
+        SET
+        state = 3, <!-- 3表示已取消 -->
+        reason = #{reason}, <!-- 取消原因 -->
+        audit_id = #{auditId}, <!-- 操作人ID -->
+        updated_time = NOW() <!-- 最后更新时间 -->
+        WHERE
+        order_id = #{orderId}
+        AND state = 1 <!-- 只能取消已通过(1)的订单 -->
+        AND is_deleted = 0
+    </update>
+
+    <update id="replaceOldOrder">
+        UPDATE venue_order
+        SET
+            state = 4,
+            audit_id = #{auditId},
+            updated_time = NOW()
+        WHERE order_id = #{orderId}
+          AND state = 1
+          AND is_deleted = 0
+    </update>
+</mapper>

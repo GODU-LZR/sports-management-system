@@ -5,8 +5,18 @@ import lombok.Data;
 @Data // 使用 Lombok 的 @Data 注解
 public class VenueSearchRequest {
 
-    private String key; // 搜索关键字
-    private String location; // 当前的地理位置，格式为 "纬度, 经度"，例如 "31.03463, 121.61245"
+    // 场地类型
+    private String sportId;
 
-    // @Data 注解会自动生成 getter, setter, equals, hashCode, toString 方法，无需手动编写
+    // 初始价格,价格区间为[value, value+10]
+    private Double value;
+
+    // 最远距离
+    private Double distance;
+
+    // 经度
+    private Double longitude;
+
+    // 纬度
+    private Double latitude;
 }
